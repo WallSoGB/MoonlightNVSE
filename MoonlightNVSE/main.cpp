@@ -43,7 +43,6 @@ typedef struct HsvColor
 unsigned long HSVToHEX(HsvColor hsv)
 {
 	RgbColor rgb;
-	//f (ExtractArgsEx(EXTRACT_ARGS_EX, &hIn, &sIn, &hsv.vIn, &rOut, &gOut, &bOut)) {
 	double      hh, p, q, t, ff;
 	long        i;
 
@@ -101,8 +100,9 @@ unsigned long HSVToHEX(HsvColor hsv)
 	rgb.r = round(rgb.r);
 	rgb.g = round(rgb.g);
 	rgb.b = round(rgb.b);
-
-	//_MESSAGE("[HSVToHEX]" "R %f, G %f, B %f", rgb.r, rgb.g, rgb.b);
+#ifdef _DEBUG
+	_MESSAGE("[HSVToHEX]" "R %f, G %f, B %f", rgb.r, rgb.g, rgb.b);
+#endif
 	return ((static_cast<int>(rgb.b) & 0xff) << 16) + ((static_cast<int>(rgb.g) & 0xff) << 8) + (static_cast<int>(rgb.r) & 0xff);
 }
 
@@ -149,7 +149,9 @@ HsvColor HEXToHSV(UInt32 hexValue)
 		hsv.h = 360 + hsv.h;
 	}
 	hsv.v = (hsv.v / 255) * 100;
-	//_MESSAGE("[HEXtoHSV]" "H %f, S %f, V %f", hsv.h, hsv.s, hsv.v);
+	#ifdef _DEBUG
+	_MESSAGE("[HEXtoHSV]" "H %f, S %f, V %f", hsv.h, hsv.s, hsv.v);
+	#endif
 	return hsv;
 }
 
@@ -185,15 +187,19 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 		sunriseColorOrg = RGBHexToDec(*sunriseColor);
 		sunsetColorOrg = RGBHexToDec(*sunsetColor);
 		nightColorOrg = RGBHexToDec(*nightColor);
-		/*_MESSAGE("[Sunrise]" "The length of sunrise is %f, start: %f, end: %f", sunriseLength, sunriseStart, sunriseEnd);
+		#ifdef _DEBUG
+		_MESSAGE("[Sunrise]" "The length of sunrise is %f, start: %f, end: %f", sunriseLength, sunriseStart, sunriseEnd);
 		_MESSAGE("[Sunset]" "The length of sunset is %f, start: %f, end: %f", sunsetLength, sunsetStart, sunsetEnd);
-		_MESSAGE("[Night]" "The length of night is %f, start: %f, end: %f", nightLength, sunsetEnd, sunriseStart);*/
+		_MESSAGE("[Night]" "The length of night is %f, start: %f, end: %f", nightLength, sunsetEnd, sunriseStart);
+		#endif
 	}
 
-	/*_MESSAGE("[Sunrise]" "sunriseColorOrg is %i, current is %x", sunriseColorOrg,*sunriseColor);
+	#ifdef _DEBUG
+	_MESSAGE("[Sunrise]" "sunriseColorOrg is %i, current is %x", sunriseColorOrg,*sunriseColor);
 	_MESSAGE("[Sunset]" "sunsetColorOrg is %i, current is %x", sunsetColorOrg, *sunsetColor);
 	_MESSAGE("[Night]" "Nightcolor is %i, current is %i", nightColorOrg, RGBHexToDec(*nightColor));
-	_MESSAGE("[Weather]" "Weather %i", weather);*/
+	_MESSAGE("[Weather]" "Weather %i", weather);
+	#endif
 
 	HsvColor nightColorHSVOrg = HEXToHSV(nightColorOrg);
 	HsvColor nightColorHSV = nightColorHSVOrg;
@@ -214,24 +220,22 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			weather->colors[4][3] = 0;
 		}
 		else {
-			  /*!ThisStdCall<bool>(0x456610, g_sky->masserMoon->rootNode
-			  _MESSAGE("[Weather]" "Moon is visible");*/
 			if (gameHour > sunsetEnd) {
 				nightV = (gameHour - sunsetEnd) * 200;
 				nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
 				weather->colors[4][3] = HSVToHEX(nightColorHSV);
-				//_MESSAGE("[Time]" "Current hour is %f", gameHour);
 			}
 			else {
 				nightV = -(gameHour / (6 - moonFadeOutHour) - (moonFadeOutHour / (6 - moonFadeOutHour)) ) * 100;
 				nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
 				weather->colors[4][3] = HSVToHEX(nightColorHSV);
-				//_MESSAGE("[Time]" "Current hour is %f", gameHour);
 			}
 		}
 
 		weather->colors[4][0] = 0;
-		//_MESSAGE("[Night]" "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
+		#ifdef _DEBUG
+		_MESSAGE("[Night]" "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
+		#endif
 	}
 	else {
 		rotMatrix = position;
@@ -239,19 +243,26 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			sunsetColorHSV.v = min(max(-((gameHour / sunsetLength) - (sunsetEnd / sunsetLength)) * 100, 0), sunsetColorHSVOrg.v);
 			weather->colors[4][2] = HSVToHEX(sunsetColorHSV);
 			weather->colors[4][3] = 0;
-			/*_MESSAGE("[Sunset]" "sunsetColor is %i, current is %i", sunsetColorOrg, RGBHexToDec(*sunsetColor));
+			#ifdef _DEBUG
+			_MESSAGE("[Sunset]" "sunsetColor is %i, current is %i", sunsetColorOrg, RGBHexToDec(*sunsetColor));
 			_MESSAGE("[Sunset]" "sunsetColorHSV.V is %f, original is %f", sunsetColorHSV.v, sunsetColorHSVOrg.v);
-			_MESSAGE("[Time]" "Current hour is %f", gameHour);*/
+			_MESSAGE("[Time]" "Current hour is %f", gameHour);
+			#endif
 
 		}
 		else if ( (gameHour >= sunriseStart) && (gameHour <= sunriseEnd - 0.25) ) {
 			sunriseColorHSV.v = min(max(((gameHour / sunriseLength) - (sunriseStart/sunriseLength)) * 100, 0), sunriseColorHSVOrg.v);
-			//_MESSAGE("[sunrise]" "sunriseColor is %i, current is %i", sunriseColorOrg, RGBHexToDec(*sunriseColor));
-			//_MESSAGE("[sunrise]" "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
+			#ifdef _DEBUG
+			_MESSAGE("[Sunrise]" "sunriseColor is %i, current is %i", sunriseColorOrg, RGBHexToDec(*sunriseColor));
+			_MESSAGE("[Sunrise]" "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
+			#endif
 			weather->colors[4][0] = HSVToHEX(sunriseColorHSV);
-			_MESSAGE("[Time]" "Current hour is %f", gameHour);
 		}
 	}
+
+	#ifdef _DEBUG
+	_MESSAGE("[Time]" "Current hour is %f", gameHour);
+	#endif
 
 	ThisStdCall(0x0043FA80, object, rotMatrix);
 }
