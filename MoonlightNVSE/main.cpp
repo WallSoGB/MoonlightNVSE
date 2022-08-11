@@ -167,10 +167,11 @@ float GetDaysPassed()
 }
 
 UInt32 nightColorOrg, sunriseColorOrg, sunsetColorOrg;
-TESWeather* currentWeather;
+TESWeather* currentWeather = nullptr;
 float nightV = 0;
 float moonFadeOutHour = 4.7; // should not change... right?
-float sunriseStart, sunriseEnd, sunsetStart, sunsetEnd, daysPassed;
+float sunriseStart, sunriseEnd, sunsetStart, sunsetEnd;
+float daysPassed;
 
 void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) {
 	Sky* g_sky = Sky::Get();
@@ -191,7 +192,7 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 	float sunsetLength = sunsetEnd - sunsetStart;
 	float nightLength = (24 - sunsetEnd) + sunriseStart;
 
-	if (currentWeather->GetEditorID() != weather->GetEditorID()) {
+	if ( currentWeather == nullptr || (currentWeather->GetEditorID() != weather->GetEditorID()) ) {
 		if(currentWeather != nullptr){
 		#ifdef _DEBUG
 			_MESSAGE("[Weather] " "Weather change occurred! Was: %s, is %s", currentWeather->GetEditorID(), weather->GetEditorID());
@@ -294,7 +295,7 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 120;
+	info->version = 121;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
