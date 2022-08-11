@@ -538,3 +538,22 @@ static_assert(sizeof(Sky) == 0x138);
 STATIC_ASSERT(offsetof(DataHandler, modList) == 0x210);
 STATIC_ASSERT(offsetof(DataHandler, unk618) == 0x618);
 STATIC_ASSERT(sizeof(DataHandler) == 0x63C);
+
+
+struct __declspec(align(4)) GameTimeGlobals
+{
+	TESGlobal* year;
+	TESGlobal* month;
+	TESGlobal* day;
+	TESGlobal* hour;
+	TESGlobal* daysPassed;
+	TESGlobal* timeScale;
+	UInt32 count18;
+	bool gameLoaded;
+	UInt8 pad1D[3];
+	UInt32 unk20;
+	UInt32 unk24;
+	UInt32 unk28;
+	float lastUpdHour;
+	UInt32 initialized;
+};

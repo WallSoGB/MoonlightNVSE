@@ -24,6 +24,7 @@ NVSEDataInterface* g_dataInterface{};
 NVSESerializationInterface* g_serializationInterface{};
 NVSEConsoleInterface* g_consoleInterface{};
 NVSEEventManagerInterface* g_eventInterface{};
+GameTimeGlobals* g_gameTimeGlobals = (GameTimeGlobals*)0x11DE7B8;
 bool (*ExtractArgsEx)(COMMAND_ARGS_EX, ...);
 
 typedef struct RgbColor
@@ -101,7 +102,7 @@ unsigned long HSVToHEX(HsvColor hsv)
 	rgb.g = round(rgb.g);
 	rgb.b = round(rgb.b);
 #ifdef _DEBUG
-	_MESSAGE("[HSVToHEX]" "R %f, G %f, B %f", rgb.r, rgb.g, rgb.b);
+	_MESSAGE("[HSVToHEX] " "R %f, G %f, B %f", rgb.r, rgb.g, rgb.b);
 #endif
 	return ((static_cast<int>(rgb.b) & 0xff) << 16) + ((static_cast<int>(rgb.g) & 0xff) << 8) + (static_cast<int>(rgb.r) & 0xff);
 }
@@ -111,9 +112,9 @@ HsvColor HEXToHSV(UInt32 hexValue)
 	HsvColor hsv;
 	RgbColor rgb;
 
-	rgb.r = hexValue / 1000000;
-	rgb.g = hexValue / 1000 % 1000;
-	rgb.b = hexValue % 1000;
+	rgb.b = ((hexValue >> 16) & 0xFF) / 255.0;
+	rgb.g = ((hexValue >> 8) & 0xFF) / 255.0;
+	rgb.r = ((hexValue) & 0xFF) / 255.0;
 
 	float fCMax = max(max(rgb.r, rgb.g), rgb.b);
 	float fCMin = min(min(rgb.r, rgb.g), rgb.b);
@@ -148,29 +149,37 @@ HsvColor HEXToHSV(UInt32 hexValue)
 	if (hsv.h < 0) {
 		hsv.h = 360 + hsv.h;
 	}
-	hsv.v = (hsv.v / 255) * 100;
+	hsv.v = hsv.v * 100;
 	#ifdef _DEBUG
-	_MESSAGE("[HEXtoHSV]" "H %f, S %f, V %f", hsv.h, hsv.s, hsv.v);
+	_MESSAGE("[HEXtoHSV] " "H %f, S %f, V %f", hsv.h, hsv.s, hsv.v);
 	#endif
 	return hsv;
 }
 
 
-UInt32 nightColorOrg, sunriseColorOrg, sunsetColorOrg, currentWeather = 0;
+float GetDaysPassed()
+{
+	if (g_gameTimeGlobals->daysPassed)
+	{
+		return g_gameTimeGlobals->daysPassed->data;
+	}
+	return 1.0F;
+}
+
+UInt32 nightColorOrg, sunriseColorOrg, sunsetColorOrg;
+TESWeather* currentWeather;
 float nightV = 0;
-float moonFadeOutHour = 4.7;
+float moonFadeOutHour = 4.7; // should not change... right?
+float sunriseStart, sunriseEnd, sunsetStart, sunsetEnd, daysPassed;
 
 void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) {
 	Sky* g_sky = Sky::Get();
 	TESWeather* weather = g_sky->currWeather;
 	NiMatrix33* rotMatrix = nullptr;
-
 	UInt32* sunriseColor = &weather->colors[4][0];
 	UInt32* sunsetColor = &weather->colors[4][2];
 	UInt32* nightColor = &weather->colors[4][3];
-
-	float const gameHour = ThisStdCall<double>(0x966A20, g_sky);
-	float sunriseStart, sunriseEnd, sunsetStart, sunsetEnd;
+	const float gameHour = ThisStdCall<double>(0x966A20, g_sky);
 
 	sunriseStart = ThisStdCall<double>(0x595EA0, g_sky);
 	sunriseEnd = ThisStdCall<double>(0x595F50, g_sky);
@@ -182,24 +191,28 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 	float sunsetLength = sunsetEnd - sunsetStart;
 	float nightLength = (24 - sunsetEnd) + sunriseStart;
 
-	if (!nightColorOrg || !sunriseColorOrg || !sunsetColorOrg || currentWeather != reinterpret_cast<UInt32>(weather)) {
-		currentWeather = reinterpret_cast<UInt32>(weather);
-		sunriseColorOrg = RGBHexToDec(*sunriseColor);
-		sunsetColorOrg = RGBHexToDec(*sunsetColor);
-		nightColorOrg = RGBHexToDec(*nightColor);
+	if (currentWeather->GetEditorID() != weather->GetEditorID()) {
+		if(currentWeather != nullptr){
 		#ifdef _DEBUG
-		_MESSAGE("[Sunrise]" "The length of sunrise is %f, start: %f, end: %f", sunriseLength, sunriseStart, sunriseEnd);
-		_MESSAGE("[Sunset]" "The length of sunset is %f, start: %f, end: %f", sunsetLength, sunsetStart, sunsetEnd);
-		_MESSAGE("[Night]" "The length of night is %f, start: %f, end: %f", nightLength, sunsetEnd, sunriseStart);
+			_MESSAGE("[Weather] " "Weather change occurred! Was: %s, is %s", currentWeather->GetEditorID(), weather->GetEditorID());
 		#endif
-	}
+		currentWeather->colors[4][0] = sunriseColorOrg;
+		currentWeather->colors[4][2] = sunsetColorOrg;
+		currentWeather->colors[4][3] = nightColorOrg;
+		}
 
-	#ifdef _DEBUG
-	_MESSAGE("[Sunrise]" "sunriseColorOrg is %i, current is %x", sunriseColorOrg,*sunriseColor);
-	_MESSAGE("[Sunset]" "sunsetColorOrg is %i, current is %x", sunsetColorOrg, *sunsetColor);
-	_MESSAGE("[Night]" "Nightcolor is %i, current is %i", nightColorOrg, RGBHexToDec(*nightColor));
-	_MESSAGE("[Weather]" "Weather %i", weather);
-	#endif
+		#ifdef _DEBUG
+			_MESSAGE("[Sunrise] " "The length of sunrise is %f, start: %f, end: %f", sunriseLength, sunriseStart, sunriseEnd);
+			_MESSAGE("[Sunset]  " "The length of sunset  is %f, start: %f, end: %f", sunsetLength, sunsetStart, sunsetEnd);
+			_MESSAGE("[Night]   " "The length of night   is %f, start: %f, end: %f", nightLength, sunsetEnd, sunriseStart);
+		#endif
+
+		currentWeather = weather;
+		sunriseColorOrg = *sunriseColor;
+		sunsetColorOrg = *sunsetColor;
+		nightColorOrg = *nightColor;
+		
+	}
 
 	HsvColor nightColorHSVOrg = HEXToHSV(nightColorOrg);
 	HsvColor nightColorHSV = nightColorHSVOrg;
@@ -210,13 +223,27 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 	HsvColor sunsetColorHSVOrg = HEXToHSV(sunsetColorOrg);
 	HsvColor sunsetColorHSV = sunsetColorHSVOrg;
 
-	int* moonPhase = reinterpret_cast<int*>(0x11CCA80);
+	//int* moonPhase = reinterpret_cast<int*>(0x11CCA80);
+
+	daysPassed = GetDaysPassed();
+	float phase = (fmod(daysPassed, 24)) /3;
+
+#ifdef _DEBUG
+	_MESSAGE("[Sunrise] " "sunriseColorOrg is %i, current is %i", RGBHexToDec(sunriseColorOrg), RGBHexToDec(*sunriseColor));
+	_MESSAGE("[Sunset]  " "sunsetColorOrg  is %i, current is %i", RGBHexToDec(sunsetColorOrg), RGBHexToDec(*sunsetColor));
+	_MESSAGE("[Night]   " "nightColorOrg   is %i, current is %i", RGBHexToDec(nightColorOrg), RGBHexToDec(*nightColor));
+	_MESSAGE("[Weather] " "Weather %s", currentWeather->GetEditorID());
+	_MESSAGE("[Moon]    " "Current phase is %f", phase);
+	_MESSAGE("[Time]    " "Days passed %f", daysPassed);
+	_MESSAGE("[Time]    " "Current hour is %f", gameHour);
+#endif
+	
 
 	if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
 		rotMatrix = &g_sky->masserMoon->rootNode->m_transformLocal.rotate;
 		rotMatrix->cr[0][0] = -(rotMatrix->cr[0][0] * 0.5);
 
-		if (*moonPhase == 4) {
+		if ( (phase > 4.25) && (phase < 5.25) ) {
 			weather->colors[4][3] = 0;
 		}
 		else {
@@ -234,7 +261,7 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 
 		weather->colors[4][0] = 0;
 		#ifdef _DEBUG
-		_MESSAGE("[Night]" "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
+		_MESSAGE("[Night]   " "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
 		#endif
 	}
 	else {
@@ -244,25 +271,18 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			weather->colors[4][2] = HSVToHEX(sunsetColorHSV);
 			weather->colors[4][3] = 0;
 			#ifdef _DEBUG
-			_MESSAGE("[Sunset]" "sunsetColor is %i, current is %i", sunsetColorOrg, RGBHexToDec(*sunsetColor));
-			_MESSAGE("[Sunset]" "sunsetColorHSV.V is %f, original is %f", sunsetColorHSV.v, sunsetColorHSVOrg.v);
-			_MESSAGE("[Time]" "Current hour is %f", gameHour);
+			_MESSAGE("[Sunset]  " "sunsetColorHSV.V is %f, original is %f", sunsetColorHSV.v, sunsetColorHSVOrg.v);
 			#endif
 
 		}
 		else if ( (gameHour >= sunriseStart) && (gameHour <= sunriseEnd - 0.25) ) {
 			sunriseColorHSV.v = min(max(((gameHour / sunriseLength) - (sunriseStart/sunriseLength)) * 100, 0), sunriseColorHSVOrg.v);
 			#ifdef _DEBUG
-			_MESSAGE("[Sunrise]" "sunriseColor is %i, current is %i", sunriseColorOrg, RGBHexToDec(*sunriseColor));
-			_MESSAGE("[Sunrise]" "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
+			_MESSAGE("[Sunrise] " "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
 			#endif
 			weather->colors[4][0] = HSVToHEX(sunriseColorHSV);
 		}
 	}
-
-	#ifdef _DEBUG
-	_MESSAGE("[Time]" "Current hour is %f", gameHour);
-	#endif
 
 	ThisStdCall(0x0043FA80, object, rotMatrix);
 }
@@ -274,7 +294,7 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 110;
+	info->version = 120;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
