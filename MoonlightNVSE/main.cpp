@@ -300,7 +300,7 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 121;
+	info->version = 122;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
