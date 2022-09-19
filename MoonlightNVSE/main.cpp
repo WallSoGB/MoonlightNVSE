@@ -150,9 +150,9 @@ HsvColor HEXToHSV(UInt32 hexValue)
 		hsv.h = 360 + hsv.h;
 	}
 	hsv.v = hsv.v * 100;
-	#ifdef _DEBUG
+#ifdef _DEBUG
 	_MESSAGE("[HEXtoHSV] " "H %f, S %f, V %f", hsv.h, hsv.s, hsv.v);
-	#endif
+#endif
 	return hsv;
 }
 
@@ -176,115 +176,120 @@ float daysPassed;
 void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) {
 	Sky* g_sky = Sky::Get();
 	TESWeather* weather = g_sky->currWeather;
-	NiMatrix33* rotMatrix = nullptr;
-	UInt32* sunriseColor = &weather->colors[4][0];
-	UInt32* sunsetColor = &weather->colors[4][2];
+	NiMatrix33* rotMatrix = position;
 	UInt32* nightColor = &weather->colors[4][3];
-	const float gameHour = ThisStdCall<double>(0x966A20, g_sky);
 
-	sunriseStart = ThisStdCall<double>(0x595EA0, g_sky);
-	sunriseEnd = ThisStdCall<double>(0x595F50, g_sky);
+	if (g_sky->masserMoon != nullptr) {
+		UInt32* sunriseColor = &weather->colors[4][0];
+		UInt32* sunsetColor = &weather->colors[4][2];
 
-	sunsetStart = ThisStdCall<double>(0x595FC0, g_sky);
-	sunsetEnd = ThisStdCall<double>(0x596030, g_sky);
+		const float gameHour = ThisStdCall<double>(0x966A20, g_sky);
 
-	float sunriseLength = sunriseEnd - sunriseStart;
-	float sunsetLength = sunsetEnd - sunsetStart;
-	float nightLength = (24 - sunsetEnd) + sunriseStart;
+		sunriseStart = ThisStdCall<double>(0x595EA0, g_sky);
+		sunriseEnd = ThisStdCall<double>(0x595F50, g_sky);
 
-	if ( currentWeather == nullptr || (currentWeather->GetEditorID() != weather->GetEditorID()) ) {
-		if(currentWeather != nullptr){
-		#ifdef _DEBUG
-			_MESSAGE("[Weather] " "Weather change occurred! Was: %s, is %s", currentWeather->GetEditorID(), weather->GetEditorID());
-		#endif
-		currentWeather->colors[4][0] = sunriseColorOrg;
-		currentWeather->colors[4][2] = sunsetColorOrg;
-		currentWeather->colors[4][3] = nightColorOrg;
-		}
+		sunsetStart = ThisStdCall<double>(0x595FC0, g_sky);
+		sunsetEnd = ThisStdCall<double>(0x596030, g_sky);
 
-		#ifdef _DEBUG
+		float sunriseLength = sunriseEnd - sunriseStart;
+		float sunsetLength = sunsetEnd - sunsetStart;
+		float nightLength = (24 - sunsetEnd) + sunriseStart;
+
+		if (currentWeather == nullptr || (currentWeather->GetEditorID() != weather->GetEditorID())) {
+			if (currentWeather != nullptr) {
+#ifdef _DEBUG
+				_MESSAGE("[Weather] " "Weather change occurred! Was: %s, is %s", currentWeather->GetEditorID(), weather->GetEditorID());
+#endif
+				currentWeather->colors[4][0] = sunriseColorOrg;
+				currentWeather->colors[4][2] = sunsetColorOrg;
+				currentWeather->colors[4][3] = nightColorOrg;
+			}
+
+#ifdef _DEBUG
 			_MESSAGE("[Sunrise] " "The length of sunrise is %f, start: %f, end: %f", sunriseLength, sunriseStart, sunriseEnd);
 			_MESSAGE("[Sunset]  " "The length of sunset  is %f, start: %f, end: %f", sunsetLength, sunsetStart, sunsetEnd);
 			_MESSAGE("[Night]   " "The length of night   is %f, start: %f, end: %f", nightLength, sunsetEnd, sunriseStart);
-		#endif
+#endif
 
-		currentWeather = weather;
-		sunriseColorOrg = *sunriseColor;
-		sunsetColorOrg = *sunsetColor;
-		nightColorOrg = *nightColor;
-		
-	}
+			currentWeather = weather;
+			sunriseColorOrg = *sunriseColor;
+			sunsetColorOrg = *sunsetColor;
+			nightColorOrg = *nightColor;
 
-	HsvColor nightColorHSVOrg = HEXToHSV(nightColorOrg);
-	HsvColor nightColorHSV = nightColorHSVOrg;
+		}
 
-	HsvColor sunriseColorHSVOrg = HEXToHSV(sunriseColorOrg);
-	HsvColor sunriseColorHSV = sunriseColorHSVOrg;
+		HsvColor nightColorHSVOrg = HEXToHSV(nightColorOrg);
+		HsvColor nightColorHSV = nightColorHSVOrg;
 
-	HsvColor sunsetColorHSVOrg = HEXToHSV(sunsetColorOrg);
-	HsvColor sunsetColorHSV = sunsetColorHSVOrg;
+		HsvColor sunriseColorHSVOrg = HEXToHSV(sunriseColorOrg);
+		HsvColor sunriseColorHSV = sunriseColorHSVOrg;
 
-	//int* moonPhase = reinterpret_cast<int*>(0x11CCA80);
+		HsvColor sunsetColorHSVOrg = HEXToHSV(sunsetColorOrg);
+		HsvColor sunsetColorHSV = sunsetColorHSVOrg;
 
-	daysPassed = GetDaysPassed();
-	float phase = (fmod(daysPassed, 24)) /3;
+		//int* moonPhase = reinterpret_cast<int*>(0x11CCA80);
+
+		daysPassed = GetDaysPassed();
+		float phase = (fmod(daysPassed, 24)) / 3;
 
 #ifdef _DEBUG
-	_MESSAGE("[Sunrise] " "sunriseColorOrg is %i, current is %i", RGBHexToDec(sunriseColorOrg), RGBHexToDec(*sunriseColor));
-	_MESSAGE("[Sunset]  " "sunsetColorOrg  is %i, current is %i", RGBHexToDec(sunsetColorOrg), RGBHexToDec(*sunsetColor));
-	_MESSAGE("[Night]   " "nightColorOrg   is %i, current is %i", RGBHexToDec(nightColorOrg), RGBHexToDec(*nightColor));
-	_MESSAGE("[Weather] " "Weather %s", currentWeather->GetEditorID());
-	_MESSAGE("[Moon]    " "Current phase is %f", phase);
-	_MESSAGE("[Time]    " "Days passed %f", daysPassed);
-	_MESSAGE("[Time]    " "Current hour is %f", gameHour);
+		_MESSAGE("[Sunrise] " "sunriseColorOrg is %i, current is %i", RGBHexToDec(sunriseColorOrg), RGBHexToDec(*sunriseColor));
+		_MESSAGE("[Sunset]  " "sunsetColorOrg  is %i, current is %i", RGBHexToDec(sunsetColorOrg), RGBHexToDec(*sunsetColor));
+		_MESSAGE("[Night]   " "nightColorOrg   is %i, current is %i", RGBHexToDec(nightColorOrg), RGBHexToDec(*nightColor));
+		_MESSAGE("[Weather] " "Weather %s", currentWeather->GetEditorID());
+		_MESSAGE("[Moon]    " "Current phase is %f", phase);
+		_MESSAGE("[Time]    " "Days passed %f", daysPassed);
+		_MESSAGE("[Time]    " "Current hour is %f", gameHour);
 #endif
-	
 
-	if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
-		rotMatrix = &g_sky->masserMoon->rootNode->m_transformLocal.rotate;
-		rotMatrix->cr[0][0] = -(rotMatrix->cr[0][0] * 0.5);
 
-		if ( (phase > 4.25) && (phase < 5.25) ) {
-			weather->colors[4][3] = 0;
-		}
-		else {
-			if (gameHour > sunsetEnd) {
-				nightV = (gameHour - sunsetEnd) * 200;
-				nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
-				weather->colors[4][3] = HSVToHEX(nightColorHSV);
+		if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
+			rotMatrix = &g_sky->masserMoon->rootNode->m_transformLocal.rotate;
+			rotMatrix->cr[0][0] = -(rotMatrix->cr[0][0] * 0.5);
+
+			if ((phase > 4.25) && (phase < 5.25)) {
+				weather->colors[4][3] = 0;
 			}
 			else {
-				nightV = -(gameHour / (6 - moonFadeOutHour) - (moonFadeOutHour / (6 - moonFadeOutHour)) ) * 100;
-				nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
-				weather->colors[4][3] = HSVToHEX(nightColorHSV);
+				if (gameHour > sunsetEnd) {
+					nightV = (gameHour - sunsetEnd) * 200;
+					nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
+					weather->colors[4][3] = HSVToHEX(nightColorHSV);
+				}
+				else {
+					nightV = -(gameHour / (6 - moonFadeOutHour) - (moonFadeOutHour / (6 - moonFadeOutHour))) * 100;
+					nightColorHSV.v = min(max(nightV, 0), nightColorHSVOrg.v);
+					weather->colors[4][3] = HSVToHEX(nightColorHSV);
+				}
+			}
+
+			weather->colors[4][0] = 0;
+#ifdef _DEBUG
+			_MESSAGE("[Night]   " "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
+#endif
+		}
+		else {
+			if ((gameHour >= sunsetStart) && (gameHour <= sunsetEnd)) {
+				sunsetColorHSV.v = min(max(-((gameHour / sunsetLength) - (sunsetEnd / sunsetLength)) * 100, 0), sunsetColorHSVOrg.v);
+				weather->colors[4][2] = HSVToHEX(sunsetColorHSV);
+				weather->colors[4][3] = 0;
+#ifdef _DEBUG
+				_MESSAGE("[Sunset]  " "sunsetColorHSV.V is %f, original is %f", sunsetColorHSV.v, sunsetColorHSVOrg.v);
+#endif
+
+			}
+			else if ((gameHour >= sunriseStart) && (gameHour <= sunriseEnd - 0.25)) {
+				sunriseColorHSV.v = min(max(((gameHour / sunriseLength) - (sunriseStart / sunriseLength)) * 100, 0), sunriseColorHSVOrg.v);
+#ifdef _DEBUG
+				_MESSAGE("[Sunrise] " "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
+#endif
+				weather->colors[4][0] = HSVToHEX(sunriseColorHSV);
 			}
 		}
-
-		weather->colors[4][0] = 0;
-		#ifdef _DEBUG
-		_MESSAGE("[Night]   " "Nightcolor.V is %f, original is %f", nightColorHSV.v, nightColorHSVOrg.v);
-		#endif
 	}
 	else {
-		rotMatrix = position;
-		if ( (gameHour >= sunsetStart) && (gameHour <= sunsetEnd) ) {
-			sunsetColorHSV.v = min(max(-((gameHour / sunsetLength) - (sunsetEnd / sunsetLength)) * 100, 0), sunsetColorHSVOrg.v);
-			weather->colors[4][2] = HSVToHEX(sunsetColorHSV);
-			weather->colors[4][3] = 0;
-			#ifdef _DEBUG
-			_MESSAGE("[Sunset]  " "sunsetColorHSV.V is %f, original is %f", sunsetColorHSV.v, sunsetColorHSVOrg.v);
-			#endif
-
-		}
-		else if ( (gameHour >= sunriseStart) && (gameHour <= sunriseEnd - 0.25) ) {
-			sunriseColorHSV.v = min(max(((gameHour / sunriseLength) - (sunriseStart/sunriseLength)) * 100, 0), sunriseColorHSVOrg.v);
-			#ifdef _DEBUG
-			_MESSAGE("[Sunrise] " "sunriseColorHSV.V is %f, original is %f", sunriseColorHSV.v, sunriseColorHSVOrg.v);
-			#endif
-			weather->colors[4][0] = HSVToHEX(sunriseColorHSV);
-		}
+		weather->colors[4][3] = 0;
 	}
-
 	ThisStdCall(0x0043FA80, object, rotMatrix);
 }
 
@@ -343,6 +348,6 @@ bool NVSEPlugin_Load(NVSEInterface* nvse)
 	if (!nvse->isEditor) {
 		WriteRelCall(0x6422EE, (UInt32)SetMoonLight);
 	}
-	
+
 	return true;
 }
