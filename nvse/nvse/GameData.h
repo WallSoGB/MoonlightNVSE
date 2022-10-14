@@ -380,10 +380,10 @@ class Moon : public SkyObject
 public:
 	virtual void	Refresh(NiNode* niNode, const char* moonStr);
 
-	NiNode* node08;			// 08
-	NiNode* node0C;			// 0C
-	NiTriShape* shape10;			// 10
-	NiTriShape* shape14;			// 14
+	NiNode* spMoonNode;			// 08
+	NiNode* spShadowNode;			// 0C
+	NiTriShape* spMoonMesh;			// 10
+	NiTriShape* spShadowMesh;			// 14
 	String			moonTexture[8];		// 18
 					//	0	Full Moon
 					//	1	Three Wan
@@ -393,15 +393,15 @@ public:
 					//	5	One Wax
 					//	6	Half Wax
 					//	7	Three Wax
-	float			flt58;				// 58
-	float			flt5C;				// 5C
-	float			flt60;				// 60
-	float			flt64;				// 64
-	float			flt68;				// 68
-	UInt32			unk6C;				// 6C
-	UInt32			unk70;				// 70
-	float			flt74;				// 74
-	float			flt78;				// 78
+	float			fadeStart;				// 58
+	float			fadeEnd;				// 5C
+	float			shadowEarlyFade;				// 60
+	float			speed;				// 64
+	float			zOffset;				// 68
+	UInt32			size;				// 6C
+	UInt32			eUpdateMoonTexture;				// 70
+	float			fAngleFadeStart;				// 74
+	float			lastUpdateHour;				// 78
 };
 
 // 18
