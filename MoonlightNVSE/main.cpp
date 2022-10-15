@@ -176,6 +176,7 @@ float moonVisibility = 1;
 
 void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) {
 	Sky* g_sky = Sky::Get();
+	TESClimate* climate = g_sky->currClimate;
 	TESWeather* weather = g_sky->currWeather;
 	NiMatrix33* rotMatrix = position;
 	HSVColor currentColor = RGBToHSV(g_sky->sunDirectional);
