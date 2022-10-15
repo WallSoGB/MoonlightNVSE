@@ -218,7 +218,7 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			else if ((phase > 2.25) && (phase < 3.25) || (phase > 6.25) && (phase < 7.25)) {
 				moonVisibility = 0.5;
 			}
-			else if ((phase > 1.25) && (phase < 2.25) || (phase > 7.25) && (phase < 8.25)) {
+			else if ((phase > 1.25) && (phase < 2.25) || (phase > 7.25) && (phase < 8.25) || phase < 0.25) {
 				moonVisibility = 0.9;
 			}
 			else if ((phase > 0.25) && (phase < 1.25)) {
@@ -245,12 +245,12 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			if ((gameHour >= sunsetStart) && (gameHour <= sunsetEnd)) {
 				multiplier = -((gameHour - sunsetEnd));
 				currentColor.v *= min(max(multiplier, 0), 1);
-#ifdef _DEBUG
+#ifdef _DEBUG 	
 				_MESSAGE("[Time] " "Sunset is in progress!");
 #endif
 			}
 			// Sunrise
-			else if ((gameHour >= sunriseStart) && (gameHour <= sunriseEnd - 0.5)) {
+			else if ((gameHour >= sunriseStart) && (gameHour <= sunriseEnd)) {
 				multiplier = (gameHour - sunriseStart);
 				currentColor.v *= min(max(multiplier, 0), 1);
 #ifdef _DEBUG
