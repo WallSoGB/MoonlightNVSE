@@ -188,12 +188,14 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 		const float gameHour = ThisStdCall<double>(0x966A20, g_sky);
 
 		// Sunrise Values
-		sunriseStart = *(float*)0x11CCCFC;
+		//sunriseStart = *(float*)0x11CCCFC;
+		sunriseStart = ThisStdCall<double>(0x595EA0, g_sky);
 		sunriseEnd = ThisStdCall<double>(0x595F50, g_sky);
 
 		// Sunset Values
 		sunsetStart = ThisStdCall<double>(0x595FC0, g_sky);
-		sunsetEnd = *(float*)0x11CCD00;
+		sunsetEnd = ThisStdCall<double>(0x596030, g_sky);
+		//sunsetEnd = *(float*)0x11CCD00;
 
 		daysPassed = GetDaysPassed();
 		float phase = (fmod(daysPassed, 24)) / 3;
@@ -276,7 +278,7 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 130;
+	info->version = 131;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
