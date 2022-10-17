@@ -264,7 +264,7 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 		NiColor currentColorRGB = HSVToRGB(currentColor);
 		_MESSAGE("[Sunlight]" "Current RGB color is R: %f, G: %f, B: %f", currentColorRGB.r, currentColorRGB.g, currentColorRGB.b);
 		_MESSAGE("[Sunlight]" "Current HSV color is H: %f, S: %f, V: %f", currentColor.h, currentColor.s, currentColor.v);
-		_MESSAGE("[Weather] " "Weather %s", currentWeather.weather->GetEditorID());
+		_MESSAGE("[Weather] " "Weather %s", weather->GetEditorID());
 		_MESSAGE("[Moon]    " "Current phase is %f", phase);
 		_MESSAGE("[Moon]    " "Current visiblity is %f", moonVisibility);
 		_MESSAGE("[Time]    " "Days passed %f", daysPassed);
