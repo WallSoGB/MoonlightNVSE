@@ -199,7 +199,7 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 		//sunsetEnd = *(float*)0x11CCD00;
 
 		daysPassed = GetDaysPassed();
-		float phase = (fmod(daysPassed, 24)) / (climate->phaseLength & 0x3F);
+		float phase = (fmod(daysPassed, (climate->phaseLength & 0x3F) * 8)) / (climate->phaseLength & 0x3F);
 
 		if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
 			rotMatrix = &g_sky->masserMoon->rootNode->m_transformLocal.rotate;
