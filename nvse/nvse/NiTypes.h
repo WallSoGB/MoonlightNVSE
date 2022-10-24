@@ -35,22 +35,23 @@ struct NiQuaternion
 // 24
 struct NiMatrix33
 {
-	float	cr[3][3];
+	float	m_pEntry[3][3];
 
 	NiMatrix33() {}
 	NiMatrix33(float m00, float m10, float m20, float m01, float m11, float m21, float m02, float m12, float m22)
 	{
-		cr[0][0] = m00;
-		cr[0][1] = m10;
-		cr[0][2] = m20;
-		cr[1][0] = m01;
-		cr[1][1] = m11;
-		cr[1][2] = m21;
-		cr[2][0] = m02;
-		cr[2][1] = m12;
-		cr[2][2] = m22;
+		m_pEntry[0][0] = m00;
+		m_pEntry[0][1] = m10;
+		m_pEntry[0][2] = m20;
+		m_pEntry[1][0] = m01;
+		m_pEntry[1][1] = m11;
+		m_pEntry[1][2] = m21;
+		m_pEntry[2][0] = m02;
+		m_pEntry[2][1] = m12;
+		m_pEntry[2][2] = m22;
 	}
 };
+typedef NiMatrix33 NiMatrix3;
 
 // 34
 struct NiTransform

@@ -174,36 +174,29 @@ float sunriseStart, sunriseEnd, sunsetStart, sunsetEnd;
 float daysPassed;
 float moonVisibility = 1;
 
-void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) {
-	Sky* g_sky = Sky::Get();
-	TESClimate* climate = g_sky->currClimate;
-	TESWeather* weather = g_sky->currWeather;
+void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* position) {
+	Sky* FNV_sky = Sky::Get();
+	TESClimate* climate = FNV_sky->currClimate;
 	NiMatrix33* rotMatrix = position;
-	HSVColor currentColor = RGBToHSV(g_sky->sunDirectional);
+	HSVColor currentColor = RGBToHSV(FNV_sky->sunDirectional);
 
-	if (g_sky->masserMoon != nullptr) {
-		UInt32* sunriseColor = &weather->colors[4][0];
-		UInt32* sunsetColor = &weather->colors[4][2];
-		UInt32* nightColor = &weather->colors[4][3];
-
-		const float gameHour = ThisStdCall<double>(0x966A20, g_sky);
+	if (FNV_sky->masserMoon != nullptr) {
+		const float gameHour = FNV_sky->gameHour;
 
 		// Sunrise Values
-		//sunriseStart = *(float*)0x11CCCFC;
-		sunriseStart = ThisStdCall<double>(0x595EA0, g_sky);
-		sunriseEnd = ThisStdCall<double>(0x595F50, g_sky);
+		sunriseStart = ThisStdCall<float>(0x595EA0, FNV_sky);
+		sunriseEnd = ThisStdCall<float>(0x595F50, FNV_sky);
 
 		// Sunset Values
-		sunsetStart = ThisStdCall<double>(0x595FC0, g_sky);
-		sunsetEnd = ThisStdCall<double>(0x596030, g_sky);
-		//sunsetEnd = *(float*)0x11CCD00;
+		sunsetStart = ThisStdCall<float>(0x595FC0, FNV_sky);
+		sunsetEnd = ThisStdCall<float>(0x596030, FNV_sky);
 
 		daysPassed = GetDaysPassed();
 		float phase = (fmod(daysPassed, (climate->phaseLength & 0x3F) * 8)) / (climate->phaseLength & 0x3F);
 
 		if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
-			rotMatrix = &g_sky->masserMoon->rootNode->m_transformLocal.rotate;
-			rotMatrix->cr[0][0] = -(rotMatrix->cr[0][0] * 0.5);
+			rotMatrix = &FNV_sky->masserMoon->rootNode->m_transformLocal.rotate;
+			rotMatrix->m_pEntry[0][0] = -(rotMatrix->m_pEntry[0][0] * 0.5);
 
 #ifdef _DEBUG
 			_MESSAGE("[Time] " "Night is in progress!");
@@ -245,7 +238,6 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			//Sunset
 			if ((gameHour >= sunsetStart) && (gameHour <= sunsetEnd)) {
 				multiplier = -((gameHour - sunsetEnd));
-				currentColor.v *= min(max(multiplier, 0), 1);
 #ifdef _DEBUG 	
 				_MESSAGE("[Time] " "Sunset is in progress!");
 #endif
@@ -253,15 +245,16 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 			// Sunrise
 			else if ((gameHour >= sunriseStart) && (gameHour <= sunriseEnd)) {
 				multiplier = (gameHour - sunriseStart);
-				currentColor.v *= min(max(multiplier, 0), 1);
 #ifdef _DEBUG
 				_MESSAGE("[Time] " "Sunrise is in progress!");
 #endif
 			}
+			currentColor.v *= min(max(multiplier, 0), 1);
 		}
-		g_sky->sunDirectional = HSVToRGB(currentColor);
+		FNV_sky->sunDirectional = HSVToRGB(currentColor);
 #ifdef _DEBUG
 		NiColor currentColorRGB = HSVToRGB(currentColor);
+		TESWeather* weather = FNV_sky->currWeather;
 		_MESSAGE("[Sunlight]" "Current RGB color is R: %f, G: %f, B: %f", currentColorRGB.r, currentColorRGB.g, currentColorRGB.b);
 		_MESSAGE("[Sunlight]" "Current HSV color is H: %f, S: %f, V: %f", currentColor.h, currentColor.s, currentColor.v);
 		_MESSAGE("[Weather] " "Weather %s", weather->GetEditorID());
@@ -272,14 +265,39 @@ void __fastcall SetMoonLight(NiNode* object, void* dummy, NiMatrix33* position) 
 #endif
 	}
 	ThisStdCall(0x0043FA80, object, rotMatrix);
-			}
+}
+
+
+void __fastcall SetMoonLightGECK(NiPoint3* position) {
+	Sky_GECK* GECK_sky = Sky_GECK::Get();
+	float gameHour = GECK_sky->fCurrentGameHour;
+	// Not bothering with color fade
+	position->y = -position->y;
+	if ((GECK_sky->masserMoon != nullptr) && (gameHour >= ThisStdCall<float>(0x680460, GECK_sky)) || (gameHour < ThisStdCall<float>(0x6803A0, GECK_sky))) {
+		NiMatrix33* rotMatrix = &GECK_sky->masserMoon->rootNode->m_transformLocal.rotate;
+		position->x = -(rotMatrix->m_pEntry[0][0] * 0.5);
+		position->y = rotMatrix->m_pEntry[1][0];
+		position->z = rotMatrix->m_pEntry[2][0];
+	}
+	ThisStdCall(0x40B400, position);
+}
+
+__declspec(naked) void SunPosFix()
+{
+	_asm
+	{
+		fld dword ptr ds : [0xEDF8E8 + 4] // Thanks Stewie for showing me how
+		fchs
+		ret
+	}
+}
 
 bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 {
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 131;
+	info->version = 140;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
@@ -325,7 +343,14 @@ bool NVSEPlugin_Load(NVSEInterface* nvse)
 	g_nvseInterface = nvse;
 
 	if (!nvse->isEditor) {
-		WriteRelCall(0x6422EE, (UInt32)SetMoonLight);
+		// FNV
+		WriteRelCall(0x6422EE, (UInt32)SetMoonLightFNV);
+	}
+	else {
+		// GECK
+		/*WriteRelCall(0x685928, (UInt32)SunPosFix);
+		PatchMemoryNop(0x68592E - 1, 1);*/
+		WriteRelCall(0x685940, (UInt32)SetMoonLightGECK);
 	}
 
 	return true;

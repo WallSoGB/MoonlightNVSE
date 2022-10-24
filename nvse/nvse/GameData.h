@@ -535,6 +535,66 @@ public:
 };
 static_assert(sizeof(Sky) == 0x138);
 
+class Sky_GECK {
+public:
+	virtual Sky_GECK* Destructor(bool doFree);
+		// Most of this is incorrect. I don't care. I only need the moon.
+		NiNode* niNode004;
+		NiNode* niNode008;
+		TESWeather* pLastWeather;
+		TESWeather* pDefaultWeather;
+		TESWeather* pOverrideWeather;
+		TESWeather* pCurrentWeather;
+		float flt134;
+		Stars* stars;
+		Clouds* clouds;
+		Atmosphere* atmosphere;
+		float f12_0;
+		Sun* sun;
+		Precipitation* precipitation;
+		Moon* masserMoon;
+		Moon* secundaMoon;
+		NiColor colorSkyUpper;
+		NiColor colorFog;
+		NiColor colorUnused050;
+		NiColor colorAmbient;
+		NiColor colorSunlight;
+		NiColor colorSun;
+		NiColor colorStars;
+		NiColor colorSkyLower;
+		NiColor colorHorizon;
+		NiColor colorUnused0A8;
+		TESClimate* pCurrentClimate;
+		NiVector3 vector0B4;
+		NiColor sunFog;
+		float windSpeed;
+		float windDirection;
+		float fogNearPlane;
+		float fogFarPlane;
+		UInt32 unk0DC;
+		UInt32 unk0E0;
+		UInt32 unk0E4;
+		float cellFogPower;
+		float fCurrentGameHour;
+		float fLastWeatherUpdate;
+		float fCurrentWeatherPct;
+		UInt32 mode;
+		UInt32 unk0F8;
+		void* pSkySoundList;
+		UInt32 uiFlashTime;
+		UInt32 uiLastMoonPhaseUpdate;
+		float windowUpdateTimer;
+		float fAccelBeginPct;
+		UInt32 unk114;
+		UInt32 uiFlags;
+		ImageSpaceModifierInstanceForm* fadeInIMODCurrent;
+		ImageSpaceModifierInstanceForm* fadeOutIMODCurrent;
+		ImageSpaceModifierInstanceForm* fadeInIMODLast;
+		ImageSpaceModifierInstanceForm* fadeOutIMODLast;
+		float f23_99;
+		__forceinline static Sky_GECK* Get() { return StdCall<Sky_GECK*>(0x42DAA0); }
+};
+
 STATIC_ASSERT(offsetof(DataHandler, modList) == 0x210);
 STATIC_ASSERT(offsetof(DataHandler, unk618) == 0x618);
 STATIC_ASSERT(sizeof(DataHandler) == 0x63C);
