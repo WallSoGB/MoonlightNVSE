@@ -267,7 +267,6 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 	ThisStdCall(0x0043FA80, object, rotMatrix);
 }
 
-
 void __fastcall SetMoonLightGECK(NiPoint3* position) {
 	Sky_GECK* GECK_sky = Sky_GECK::Get();
 	float gameHour = GECK_sky->fCurrentGameHour;
@@ -280,16 +279,6 @@ void __fastcall SetMoonLightGECK(NiPoint3* position) {
 		position->z = rotMatrix->m_pEntry[2][0];
 	}
 	ThisStdCall(0x40B400, position);
-}
-
-__declspec(naked) void SunPosFix()
-{
-	_asm
-	{
-		fld dword ptr ds : [0xEDF8E8 + 4] // Thanks Stewie for showing me how
-		fchs
-		ret
-	}
 }
 
 bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
@@ -348,8 +337,6 @@ bool NVSEPlugin_Load(NVSEInterface* nvse)
 	}
 	else {
 		// GECK
-		/*WriteRelCall(0x685928, (UInt32)SunPosFix);
-		PatchMemoryNop(0x68592E - 1, 1);*/
 		WriteRelCall(0x685940, (UInt32)SetMoonLightGECK);
 	}
 
