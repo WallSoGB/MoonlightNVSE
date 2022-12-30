@@ -4,8 +4,8 @@
     <Filter Include="nvse">
       <UniqueIdentifier>{92a4f350-f2ec-4fca-bdd3-927732d91b34}</UniqueIdentifier>
     </Filter>
-    <Filter Include="functions">
-      <UniqueIdentifier>{010e4101-a209-4fed-af9f-5ffa21a85c34}</UniqueIdentifier>
+    <Filter Include="internal">
+      <UniqueIdentifier>{f805c17d-2747-447f-be92-14da37aff064}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -124,12 +124,6 @@
     <ClInclude Include="..\nvse\nvse\CommandTable.h">
       <Filter>nvse</Filter>
     </ClInclude>
-    <ClInclude Include="fn_intro_to_script_functions.h">
-      <Filter>functions</Filter>
-    </ClInclude>
-    <ClInclude Include="fn_typed_functions.h">
-      <Filter>functions</Filter>
-    </ClInclude>
     <ClInclude Include="..\nvse\nvse\GameScript.h">
       <Filter>nvse</Filter>
     </ClInclude>
@@ -141,6 +135,9 @@
     </ClInclude>
     <ClInclude Include="..\nvse\nvse\GameUI.h">
       <Filter>nvse</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\decoding.h">
+      <Filter>internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

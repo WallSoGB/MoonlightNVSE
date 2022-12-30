@@ -87,7 +87,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ForcedIncludeFiles>nvse/prefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -157,8 +157,7 @@
     <ClInclude Include="..\nvse\nvse\SafeWrite.h" />
     <ClInclude Include="..\nvse\nvse\Utilities.h" />
     <ClInclude Include="..\nvse\nvse\utility.h" />
-    <ClInclude Include="fn_intro_to_script_functions.h" />
-    <ClInclude Include="fn_typed_functions.h" />
+    <ClInclude Include="internal\decoding.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

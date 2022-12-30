@@ -26,8 +26,9 @@
 
 
 
-struct NiPoint3
+class NiPoint3
 {
+public:
 	float x, y, z;
 
 	void Scale(float scale) {

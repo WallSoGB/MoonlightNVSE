@@ -8,6 +8,7 @@
 #include "nvse/NiObjects.h"
 #include "nvse/Utilities.h"
 #include "nvse/utility.h"
+#include <internal/decoding.h>
 #include <string>
 
 IDebugLog		gLog("logs\\moonlightNVSE.log");
@@ -24,6 +25,7 @@ NVSEDataInterface* g_dataInterface{};
 NVSESerializationInterface* g_serializationInterface{};
 NVSEConsoleInterface* g_consoleInterface{};
 NVSEEventManagerInterface* g_eventInterface{};
+
 GameTimeGlobals* g_gameTimeGlobals = (GameTimeGlobals*)0x11DE7B8;
 bool (*ExtractArgsEx)(COMMAND_ARGS_EX, ...);
 
@@ -149,7 +151,7 @@ HSVColor RGBToHSV(NiColor RGB)
 	return HSV;
 }
 
-HSVColor HexToHSV(UInt32 HexValue)
+inline HSVColor HexToHSV(UInt32 HexValue)
 {
 	NiColor RGB;
 
@@ -160,13 +162,35 @@ HSVColor HexToHSV(UInt32 HexValue)
 	return RGBToHSV(RGB);
 }
 
-float GetDaysPassed()
+inline float GetDaysPassed()
 {
 	if (g_gameTimeGlobals->daysPassed)
 	{
 		return g_gameTimeGlobals->daysPassed->data;
 	}
 	return 1.0F;
+}
+
+inline float Unitize(NiPoint3* src)
+{
+	float length = sqrt(src->x * src->x + src->y * src->y + src->z * src->z);
+
+	if (length > 1e-06f)
+	{
+		float recip = 1.0f / length;
+		src->x *= recip;
+		src->y *= recip;
+		src->z *= recip;
+	}
+	else
+	{
+		src->x = 0;
+		src->y = 0;
+		src->z = 0;
+		length = 0;
+	}
+
+	return length;
 }
 
 float multiplier = 1;
@@ -177,8 +201,9 @@ float moonVisibility = 1;
 void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* position) {
 	Sky* FNV_sky = Sky::Get();
 	TESClimate* climate = FNV_sky->currClimate;
-	NiMatrix33* rotMatrix = position;
 	HSVColor currentColor = RGBToHSV(FNV_sky->sunDirectional);
+	TES* tes = TES::Get();
+	NiNode* FNV_weather = *(NiNode**)0x11DEDA4;
 
 	if (FNV_sky->masserMoon != nullptr) {
 		const float gameHour = FNV_sky->gameHour;
@@ -194,9 +219,11 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 		daysPassed = GetDaysPassed();
 		float phase = (fmod(daysPassed, (climate->phaseLength & 0x3F) * 8)) / (climate->phaseLength & 0x3F);
 
+		moonVisibility = 1;
+
 		if ((gameHour >= sunsetEnd) || (gameHour < sunriseStart)) {
-			rotMatrix = &FNV_sky->masserMoon->rootNode->m_transformLocal.rotate;
-			rotMatrix->m_pEntry[0][0] = -(rotMatrix->m_pEntry[0][0] * 0.5);
+			position = &FNV_sky->masserMoon->rootNode->m_transformLocal.m_Rotate;
+			position->m_pEntry[0][0] = -(position->m_pEntry[0][0] * 0.5);
 
 #ifdef _DEBUG
 			_MESSAGE("[Time] " "Night is in progress!");
@@ -232,7 +259,6 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 				_MESSAGE("[Time] " "Night is in progress! (Second half)");
 #endif
 			}
-			currentColor.v *= min(max(multiplier, 0), 1) * moonVisibility;
 		}
 		else {
 			//Sunset
@@ -249,9 +275,11 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 				_MESSAGE("[Time] " "Sunrise is in progress!");
 #endif
 			}
-			currentColor.v *= min(max(multiplier, 0), 1);
 		}
+
+		currentColor.v *= min(max(multiplier, 0), 1);
 		FNV_sky->sunDirectional = HSVToRGB(currentColor);
+
 #ifdef _DEBUG
 		NiColor currentColorRGB = HSVToRGB(currentColor);
 		TESWeather* weather = FNV_sky->currWeather;
@@ -264,7 +292,16 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 		_MESSAGE("[Time]    " "Current hour is %f", gameHour);
 #endif
 	}
-	ThisStdCall(0x0043FA80, object, rotMatrix);
+	object->m_transformLocal.m_Rotate = *position;
+	
+	// Fixes sky position in interiors marked as exterior. 
+	// It doesn't respect the north angle offset in vanilla, making sunrise happen at south etc.
+	float northAngle = 0;
+	if (tes->currentInterior) {
+		northAngle = -ThisStdCall<float>(0x555AD0, tes->currentInterior);
+	}
+	ThisStdCall(0x4A0C90, &FNV_sky->niNode004->m_transformLocal.m_Rotate, northAngle);
+	ThisStdCall(0x4A0C90, &FNV_weather->m_transformLocal.m_Rotate, northAngle);
 }
 
 void __fastcall SetMoonLightGECK(NiPoint3* position) {
@@ -273,12 +310,12 @@ void __fastcall SetMoonLightGECK(NiPoint3* position) {
 	// Not bothering with color fade
 	position->y = -position->y;
 	if ((GECK_sky->masserMoon != nullptr) && (gameHour >= ThisStdCall<float>(0x680460, GECK_sky)) || (gameHour < ThisStdCall<float>(0x6803A0, GECK_sky))) {
-		NiMatrix33* rotMatrix = &GECK_sky->masserMoon->rootNode->m_transformLocal.rotate;
+		NiMatrix33* rotMatrix = &GECK_sky->masserMoon->rootNode->m_transformLocal.m_Rotate;
 		position->x = -(rotMatrix->m_pEntry[0][0] * 0.5);
 		position->y = rotMatrix->m_pEntry[1][0];
 		position->z = rotMatrix->m_pEntry[2][0];
 	}
-	ThisStdCall(0x40B400, position);
+	Unitize(position);
 }
 
 bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)

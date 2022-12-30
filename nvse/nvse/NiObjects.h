@@ -278,23 +278,28 @@ public:
 
 };	// 0AC
 
-#if 0
 
-// F0
-class SceneGraph : public NiNode
-{
-public:
-	SceneGraph();
-	~SceneGraph();
-
-	NiCamera			* camera;			// 0DC
-	UInt32				unk0E0;				// 0E0
-	NiCullingProcess	* cullingProcess;	// 0E4
-	UInt32				unk0E8;				// 0E8
-	float				cameraFOV;			// 0EC
-};
-
-STATIC_ASSERT(sizeof(SceneGraph) == 0x0F0);
+//class BSSceneGraph : public NiNode
+//{
+//public:
+//	NiCamera* rootCamera;
+//	unsigned int unk;
+//	NiCullingProcess* cullingProc;
+//	bool isMinFarPlaneDist;
+//	float cameraFOV;
+//};
+//
+//
+//// F0
+//class SceneGraph : public BSSceneGraph
+//{
+//public:
+//	SceneGraph();
+//	~SceneGraph();
+//
+//};
+//
+//STATIC_ASSERT(sizeof(SceneGraph) == 0x0C0);
 
 // E0
 class BSTempNodeManager : public NiNode
@@ -434,11 +439,13 @@ public:
 
 	// update functions set kFlag_Unk3
 
-	UInt16	flags;				// 0DC
+	UInt16	m_uFlags;				// 0DC
 	UInt8	pad0DE[2];			// 0DE
 	float	m_lastUpdateTime;	// 0E0
 };
 
+
+#if 0
 // FC
 class NiSwitchNode : public NiNode
 {
