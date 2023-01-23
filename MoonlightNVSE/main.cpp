@@ -277,7 +277,7 @@ void __fastcall SetMoonLightFNV(NiNode* object, void* dummy, NiMatrix33* positio
 			}
 		}
 
-		currentColor.v *= min(max(multiplier, 0), 1);
+		currentColor.v *= min(max(multiplier, 0), 1) * moonVisibility;
 		FNV_sky->sunDirectional = HSVToRGB(currentColor);
 
 #ifdef _DEBUG
@@ -323,7 +323,7 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info)
 	// fill out the info structure
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
-	info->version = 140;
+	info->version = 151;
 
 	// version checks
 	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
