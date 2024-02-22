@@ -46,11 +46,17 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,12 +64,13 @@
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\..;$(SolutionDir)\..\nvse;$(SolutionDir)\..\nvse\nvse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;NVSE_PLUGIN_EXAMPLE_EXPORTS;RUNTIME_VERSION=0x040020D0;RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ForcedIncludeFiles>nvse/prefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
@@ -75,21 +82,33 @@
     </Link>
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
-      <Command>copy "$(TargetPath)" "C:\Games\Modding\TTW\mods\MoonlightNVSE\nvse\plugins\$(TargetFileName)"</Command>
+      <Command>copy "$(TargetPath)" "C:\Games\Modding\TTW\mods\Fallout Alpha Rendering Tweaks - NVSE\nvse\plugins\$(TargetFileName)"
+copy "$(TargetDir)$(TargetName).pdb" "C:\Games\Modding\TTW\mods\Fallout Alpha Rendering Tweaks - NVSE\nvse\plugins\$(TargetName).pdb"
+copy "$(TargetPath)" "$(LOCALAPPDATA)\ModOrganizer\TTW\mods\Fallout Alpha Rendering Tweaks - NVSE\nvse\plugins\$(TargetFileName)"
+copy "$(TargetDir)$(TargetName).pdb" "$(LOCALAPPDATA)\ModOrganizer\TTW\mods\Fallout Alpha Rendering Tweaks - NVSE\nvse\plugins\$(TargetName).pdb"
+copy "$(TargetDir)$(TargetName).pdb" "C:\Symbols\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\..;$(SolutionDir)\..\nvse;$(SolutionDir)\..\nvse\nvse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\..;$(SolutionDir)\..\nvse;$(SolutionDir)\..\nvse\nvse;internal;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;NVSE_PLUGIN_EXAMPLE_EXPORTS;RUNTIME_VERSION=0x040020D0;RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ForcedIncludeFiles>nvse/prefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntelJCCErratum>true</IntelJCCErratum>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
@@ -100,32 +119,21 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <NoEntryPoint>
+      </NoEntryPoint>
     </Link>
     <PostBuildEvent>
-      <Message>Installing DLL...</Message>
-      <Command>copy "$(TargetPath)" "C:\Games\Modding\TTW\mods\MoonlightNVSE\nvse\plugins\$(TargetFileName)"</Command>
+      <Message>
+      </Message>
+      <Command>copy "$(TargetPath)" "$(MO2)\mods\MoonlightNVSE\nvse\plugins\$(TargetFileName)"
+copy "$(TargetDir)$(TargetName).pdb" "$(MO2)\mods\MoonlightNVSE\nvse\plugins\$(TargetName).pdb"
+copy "$(TargetDir)$(TargetName).pdb" "C:\Symbols\$(TargetName).pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\nvse\nvse\containers.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameAPI.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameBSExtraData.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameData.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameExtraData.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameForms.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameObjects.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameOSDepend.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameProcess.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameRTTI.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameScript.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameSettings.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameTasks.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameTiles.cpp" />
-    <ClCompile Include="..\nvse\nvse\GameTypes.cpp" />
-    <ClCompile Include="..\nvse\nvse\printf.cpp" />
     <ClCompile Include="..\nvse\nvse\SafeWrite.cpp" />
-    <ClCompile Include="..\nvse\nvse\Utilities.cpp" />
-    <ClCompile Include="..\nvse\nvse\utility.cpp" />
     <ClCompile Include="dllmain.c">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ForcedIncludeFiles>
@@ -135,32 +143,13 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nvse\nvse\CommandTable.h" />
-    <ClInclude Include="..\nvse\nvse\containers.h" />
-    <ClInclude Include="..\nvse\nvse\GameAPI.h" />
-    <ClInclude Include="..\nvse\nvse\GameBSExtraData.h" />
-    <ClInclude Include="..\nvse\nvse\GameData.h" />
-    <ClInclude Include="..\nvse\nvse\GameEffects.h" />
-    <ClInclude Include="..\nvse\nvse\GameExtraData.h" />
-    <ClInclude Include="..\nvse\nvse\GameForms.h" />
-    <ClInclude Include="..\nvse\nvse\GameObjects.h" />
-    <ClInclude Include="..\nvse\nvse\GameOSDepend.h" />
-    <ClInclude Include="..\nvse\nvse\GameProcess.h" />
-    <ClInclude Include="..\nvse\nvse\GameRTTI.h" />
-    <ClInclude Include="..\nvse\nvse\GameScript.h" />
-    <ClInclude Include="..\nvse\nvse\GameSettings.h" />
-    <ClInclude Include="..\nvse\nvse\GameTasks.h" />
-    <ClInclude Include="..\nvse\nvse\GameTiles.h" />
-    <ClInclude Include="..\nvse\nvse\GameTypes.h" />
-    <ClInclude Include="..\nvse\nvse\GameUI.h" />
-    <ClInclude Include="..\nvse\nvse\PluginAPI.h" />
     <ClInclude Include="..\nvse\nvse\SafeWrite.h" />
-    <ClInclude Include="..\nvse\nvse\Utilities.h" />
-    <ClInclude Include="..\nvse\nvse\utility.h" />
-    <ClInclude Include="internal\decoding.h" />
+    <ClInclude Include="external\simpleini\SimpleIni.h" />
+    <ClInclude Include="GameData.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common_vc9.vcxproj">
@@ -170,5 +159,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\directxmath.2024.2.15.1\build\native\directxmath.targets" Condition="Exists('packages\directxmath.2024.2.15.1\build\native\directxmath.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\directxmath.2024.2.15.1\build\native\directxmath.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\directxmath.2024.2.15.1\build\native\directxmath.targets'))" />
+  </Target>
 </Project>

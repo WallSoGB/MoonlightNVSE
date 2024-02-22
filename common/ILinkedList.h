@@ -6,55 +6,55 @@ struct ILink
 {
 	static const UInt32 s_offset;
 
-	ILink <T>	* next;
-	ILink <T>	* prev;
+	ILink <T>* m_pkNext;
+	ILink <T>* prev;
 
-	T *	GetObj(void)	{ return (T *)(((uintptr_t)this) - s_offset); }
+	T* GetObj(void) { return (T*)(((uintptr_t)this) - s_offset); }
 
-	static ILink <T> *	GetLink(T * obj)	{ return (ILink <T> *)(((uintptr_t)obj) + s_offset); }
+	static ILink <T>* GetLink(T* obj) { return (ILink <T> *)(((uintptr_t)obj) + s_offset); }
 
 	void	Unlink(void)
 	{
-		if(next)	next->prev = prev;
-		if(prev)	prev->next = next;
+		if (m_pkNext)	m_pkNext->prev = prev;
+		if (prev)	prev->m_pkNext = m_pkNext;
 
-		next = prev = NULL;
+		m_pkNext = prev = NULL;
 	}
 
-	void	LinkBefore(T * obj)
+	void	LinkBefore(T* obj)
 	{
 		LinkBefore(GetLink(obj));
 	}
 
-	void	LinkAfter(T * obj)
+	void	LinkAfter(T* obj)
 	{
 		LinkAfter(GetLink(obj));
 	}
 
-	void	LinkBefore(ILink <T> * link)
+	void	LinkBefore(ILink <T>* link)
 	{
-		link->next = this;
+		link->m_pkNext = this;
 		link->prev = prev;
 
-		if(prev)
+		if (prev)
 		{
-			prev->next = link;
+			prev->m_pkNext = link;
 		}
 
 		prev = link;
 	}
 
-	void	LinkAfter(ILink <T> * link)
+	void	LinkAfter(ILink <T>* link)
 	{
-		link->next = next;
+		link->m_pkNext = m_pkNext;
 		link->prev = this;
 
-		if(next)
+		if (m_pkNext)
 		{
-			next->prev = link;
+			m_pkNext->prev = link;
 		}
 
-		next = link;
+		m_pkNext = link;
 	}
 };
 
@@ -66,25 +66,25 @@ struct ILinkedList
 
 	void	Reset(void)
 	{
-		begin.next = &end;
+		begin.m_pkNext = &end;
 		begin.prev = NULL;
-		end.next = NULL;
+		end.m_pkNext = NULL;
 		end.prev = &begin;
 	}
 
-	void	PushFront(T * obj)
+	void	PushFront(T* obj)
 	{
-		ILink <T>	* objLink = ILink <T>::GetLink(obj);
+		ILink <T>* objLink = ILink <T>::GetLink(obj);
 
-		objLink->next = begin.next;
+		objLink->m_pkNext = begin.m_pkNext;
 		objLink->prev = &begin;
 
-		if(objLink->next)
+		if (objLink->m_pkNext)
 		{
-			objLink->next->prev = objLink;
+			objLink->m_pkNext->prev = objLink;
 		}
 
-		begin.next = objLink;
+		begin.m_pkNext = objLink;
 	}
 };
 

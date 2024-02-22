@@ -1,32 +1,31 @@
 #include "IBufferStream.h"
 
 IBufferStream::IBufferStream()
-:streamBuf(NULL), flags(0)
+	:streamBuf(NULL), flags(0)
 {
-
 }
 
-IBufferStream::IBufferStream(const IBufferStream & rhs)
+IBufferStream::IBufferStream(const IBufferStream& rhs)
 {
 	// explicitly not supporting copy constructor for self-owned buffers
 	ASSERT((flags & kFlag_OwnedBuf) == 0);
 }
 
-IBufferStream::IBufferStream(void * buf, UInt64 inLength)
-:streamBuf(NULL), flags(0)
+IBufferStream::IBufferStream(void* buf, UInt64 inLength)
+	:streamBuf(NULL), flags(0)
 {
 	SetBuffer(buf, inLength);
 }
 
 IBufferStream::~IBufferStream()
 {
-	if(flags & kFlag_OwnedBuf)
+	if (flags & kFlag_OwnedBuf)
 	{
-		delete [] streamBuf;
+		delete[] streamBuf;
 	}
 }
 
-IBufferStream & IBufferStream::operator=(IBufferStream & rhs)
+IBufferStream& IBufferStream::operator=(IBufferStream& rhs)
 {
 	// explicitly not supporting copying for self-owned buffers
 	ASSERT((flags & kFlag_OwnedBuf) == 0);
@@ -37,21 +36,21 @@ IBufferStream & IBufferStream::operator=(IBufferStream & rhs)
 	return *this;
 }
 
-void IBufferStream::SetBuffer(void * buf, UInt64 inLength)
+void IBufferStream::SetBuffer(void* buf, UInt64 inLength)
 {
-	streamBuf = (UInt8 *)buf;
+	streamBuf = (UInt8*)buf;
 	streamLength = inLength;
 
 	Rewind();
 }
 
-void IBufferStream::ReadBuf(void * buf, UInt32 inLength)
+void IBufferStream::ReadBuf(void* buf, UInt32 inLength)
 {
 	memcpy(buf, &streamBuf[streamOffset], inLength);
 	streamOffset += inLength;
 }
 
-void IBufferStream::WriteBuf(const void * buf, UInt32 inLength)
+void IBufferStream::WriteBuf(const void* buf, UInt32 inLength)
 {
 	memcpy(&streamBuf[streamOffset], buf, inLength);
 	streamOffset += inLength;

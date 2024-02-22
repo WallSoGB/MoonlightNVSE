@@ -3,7 +3,7 @@
 #include "common/IFileStream.h"
 #include <shlobj.h>
 
-std::FILE			* IDebugLog::logFile = NULL;
+std::FILE* IDebugLog::logFile = NULL;
 char				IDebugLog::sourceBuf[16] = { 0 };
 char				IDebugLog::headerText[16] = { 0 };
 char				IDebugLog::formatBuf[8192] = { 0 };
@@ -20,22 +20,22 @@ IDebugLog::IDebugLog()
 	//
 }
 
-IDebugLog::IDebugLog(const char * name)
+IDebugLog::IDebugLog(const char* name)
 {
 	Open(name);
 }
 
 IDebugLog::~IDebugLog()
 {
-	if(logFile)
+	if (logFile)
 		fclose(logFile);
 }
 
-void IDebugLog::Open(const char * path)
+void IDebugLog::Open(const char* path)
 {
 	logFile = _fsopen(path, "w", _SH_DENYWR);
 
-	if(!logFile)
+	if (!logFile)
 	{
 		UInt32	id = 0;
 		char	name[1024];
@@ -47,12 +47,11 @@ void IDebugLog::Open(const char * path)
 
 			logFile = NULL;
 			logFile = _fsopen(name, "w", _SH_DENYWR);
-		}
-		while(!logFile && (id < 5));
+		} while (!logFile && (id < 5));
 	}
 }
 
-void IDebugLog::OpenRelative(int folderID, const char * relPath)
+void IDebugLog::OpenRelative(int folderID, const char* relPath)
 {
 	char	path[MAX_PATH];
 
@@ -67,16 +66,16 @@ void IDebugLog::OpenRelative(int folderID, const char * relPath)
 
 /**
  *	Output a non-formatted message to the log file
- *	
+ *
  *	@param message the message
  *	@param source the source of the message, or NULL to use the previous source
  */
-void IDebugLog::Message(const char * message, const char * source)
+void IDebugLog::Message(const char* message, const char* source)
 {
-	if(source)
+	if (source)
 		SetSource(source);
 
-	if(inBlock)
+	if (inBlock)
 	{
 		SeekCursor(RoundToTab((indentLevel * 4) + strlen(headerText)));
 	}
@@ -93,11 +92,11 @@ void IDebugLog::Message(const char * message, const char * source)
 
 /**
  *	Output a formatted message to the log file
- *	
+ *
  *	@note It is impossible to set the source of a formatted message.
  *	The previous source will be used.
  */
-void IDebugLog::FormattedMessage(const char * fmt, ...)
+void IDebugLog::FormattedMessage(const char* fmt, ...)
 {
 	va_list	argList;
 
@@ -109,43 +108,43 @@ void IDebugLog::FormattedMessage(const char * fmt, ...)
 
 /**
  *	Output a formatted message to the log file
- *	
+ *
  *	@note It is impossible to set the source of a formatted message.
  *	The previous source will be used.
  */
-void IDebugLog::FormattedMessage(const char * fmt, va_list args)
+void IDebugLog::FormattedMessage(const char* fmt, va_list args)
 {
 	vsprintf_s(formatBuf, sizeof(formatBuf), fmt, args);
 	Message(formatBuf);
 }
 
-void IDebugLog::Log(LogLevel level, const char * fmt, va_list args)
+void IDebugLog::Log(LogLevel level, const char* fmt, va_list args)
 {
 	bool	log = (level <= logLevel);
 	bool	print = (level <= printLevel);
 
-	if(log || print)
+	if (log || print)
 		vsprintf_s(formatBuf, sizeof(formatBuf), fmt, args);
 
-	if(log)
+	if (log)
 		Message(formatBuf);
-	
-	if(print)
+
+	if (print)
 		printf("%s\n", formatBuf);
 }
 
 /**
  *	Set the current message source
  */
-void IDebugLog::SetSource(const char * source)
+void IDebugLog::SetSource(const char* source)
 {
 	strcpy_s(sourceBuf, sizeof(sourceBuf), source);
 	strcpy_s(headerText, sizeof(headerText), "[        ]\t");
-	
-	char	* tgt = headerText + 1;
-	char	* src = sourceBuf;
 
-	for(int i = 0; (i < 8) && *src; i++, tgt++, src++)
+	char* tgt = headerText + 1;
+	char* src = sourceBuf;
+
+	for (int i = 0; (i < 8) && *src; i++, tgt++, src++)
 		*tgt = *src;
 }
 
@@ -170,7 +169,7 @@ void IDebugLog::Indent(void)
  */
 void IDebugLog::Outdent(void)
 {
-	if(indentLevel)
+	if (indentLevel)
 		indentLevel--;
 }
 
@@ -196,7 +195,7 @@ void IDebugLog::CloseBlock(void)
 
 /**
  *	Enable/disable autoflush
- *	
+ *
  *	@param inAutoFlush autoflush state
  */
 void IDebugLog::SetAutoFlush(bool inAutoFlush)
@@ -206,18 +205,18 @@ void IDebugLog::SetAutoFlush(bool inAutoFlush)
 
 /**
  *	Print spaces to the log
- *	
+ *
  *	If possible, tabs are used instead of spaces.
  */
 void IDebugLog::PrintSpaces(int numSpaces)
 {
 	int	originalNumSpaces = numSpaces;
 
-	if(logFile)
+	if (logFile)
 	{
-		while(numSpaces > 0)
+		while (numSpaces > 0)
 		{
-			if(numSpaces >= TabSize())
+			if (numSpaces >= TabSize())
 			{
 				numSpaces -= TabSize();
 				fputc('\t', logFile);
@@ -236,21 +235,21 @@ void IDebugLog::PrintSpaces(int numSpaces)
 /**
  *	Prints raw text to the log file
  */
-void IDebugLog::PrintText(const char * buf)
+void IDebugLog::PrintText(const char* buf)
 {
-	if(logFile)
+	if (logFile)
 	{
 		fputs(buf, logFile);
-		if(autoFlush)
+		if (autoFlush)
 			fflush(logFile);
 	}
 
-	const char	* traverse = buf;
+	const char* traverse = buf;
 	char		data;
 
-	while(data = *traverse++)
+	while (data = *traverse++)
 	{
-		if(data == '\t')
+		if (data == '\t')
 			cursorPos += TabSize();
 		else
 			cursorPos++;
@@ -262,11 +261,11 @@ void IDebugLog::PrintText(const char * buf)
  */
 void IDebugLog::NewLine(void)
 {
-	if(logFile)
+	if (logFile)
 	{
 		fputc('\n', logFile);
 
-		if(autoFlush)
+		if (autoFlush)
 			fflush(logFile);
 	}
 
@@ -275,13 +274,13 @@ void IDebugLog::NewLine(void)
 
 /**
  *	Prints spaces to align the cursor to the requested position
- *	
+ *
  *	@note The cursor move will not be performed if the request would move the cursor
  *	backwards.
  */
 void IDebugLog::SeekCursor(int position)
 {
-	if(position > cursorPos)
+	if (position > cursorPos)
 		PrintSpaces(position - cursorPos);
 }
 

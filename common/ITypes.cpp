@@ -1,13 +1,12 @@
 #include "ITypes.h"
 
 Bitstring::Bitstring()
-:data(NULL)
+	:data(NULL)
 {
-	
 }
 
 Bitstring::Bitstring(UInt32 inLength)
-:data(NULL)
+	:data(NULL)
 {
 	Alloc(inLength);
 }
@@ -29,7 +28,7 @@ void Bitstring::Alloc(UInt32 inLength)
 
 void Bitstring::Dispose(void)
 {
-	delete [] data;
+	delete[] data;
 }
 
 void Bitstring::Clear(void)

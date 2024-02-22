@@ -13,16 +13,16 @@ IFIFO::~IFIFO()
 	delete fifoBuf;
 }
 
-bool IFIFO::Push(UInt8 * buf, UInt32 length)
+bool IFIFO::Push(UInt8* buf, UInt32 length)
 {
 	// would that overflow the buffer?
-	if(length > GetBufferRemain())
+	if (length > GetBufferRemain())
 		return false;
 
 	UInt32	writeOffset = GetWriteOffset();
 
 	// will this cross the end of the buffer?
-	if(writeOffset + length > fifoBufSize)
+	if (writeOffset + length > fifoBufSize)
 	{
 		UInt32	segmentLength = fifoBufSize - writeOffset;
 
@@ -40,12 +40,12 @@ bool IFIFO::Push(UInt8 * buf, UInt32 length)
 	return true;
 }
 
-bool IFIFO::Pop(UInt8 * buf, UInt32 length)
+bool IFIFO::Pop(UInt8* buf, UInt32 length)
 {
 	bool	result = Peek(buf, length);
 
 	// update pointers if we were successful
-	if(result)
+	if (result)
 	{
 		fifoDataLength -= length;
 		fifoBase = ToRawOffset(fifoBase + length);
@@ -54,14 +54,14 @@ bool IFIFO::Pop(UInt8 * buf, UInt32 length)
 	return result;
 }
 
-bool IFIFO::Peek(UInt8 * buf, UInt32 length)
+bool IFIFO::Peek(UInt8* buf, UInt32 length)
 {
 	// would that underflow the buffer?
-	if(length > fifoDataLength)
+	if (length > fifoDataLength)
 		return false;
 
 	// will this cross the end of the buffer?
-	if(fifoBase + length > fifoBufSize)
+	if (fifoBase + length > fifoBufSize)
 	{
 		UInt32	segmentLength = fifoBufSize - fifoBase;
 

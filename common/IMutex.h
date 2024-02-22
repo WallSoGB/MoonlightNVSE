@@ -2,15 +2,15 @@
 
 class IMutex
 {
-	public:
-		static const UInt32	kDefaultTimeout = 1000 * 10;
+public:
+	static const UInt32	kDefaultTimeout = 1000 * 10;
 
-		IMutex();
-		~IMutex();
+	IMutex();
+	~IMutex();
 
-		bool	Wait(UInt32 timeout = kDefaultTimeout);
-		void	Release(void);
+	bool	Wait(UInt32 timeout = kDefaultTimeout);
+	void	Release(void);
 
-	private:
-		HANDLE	theMutex;
+private:
+	HANDLE	theMutex;
 };

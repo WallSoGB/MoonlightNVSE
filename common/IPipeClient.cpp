@@ -1,7 +1,7 @@
 #include "IPipeClient.h"
 
 IPipeClient::IPipeClient()
-:m_pipe(INVALID_HANDLE_VALUE)
+	:m_pipe(INVALID_HANDLE_VALUE)
 {
 	//
 }
@@ -11,7 +11,7 @@ IPipeClient::~IPipeClient()
 	Close();
 }
 
-bool IPipeClient::Open(const char * name)
+bool IPipeClient::Open(const char* name)
 {
 	Close();
 
@@ -29,27 +29,27 @@ bool IPipeClient::Open(const char * name)
 
 void IPipeClient::Close(void)
 {
-	if(m_pipe != INVALID_HANDLE_VALUE)
+	if (m_pipe != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(m_pipe);
 		m_pipe = INVALID_HANDLE_VALUE;
 	}
 }
 
-bool IPipeClient::ReadMessage(UInt8 * buf, UInt32 length)
+bool IPipeClient::ReadMessage(UInt8* buf, UInt32 length)
 {
 	UInt32	bytesRead;
 
 	ReadFile(m_pipe, buf, length, &bytesRead, NULL);
 
-	IPipeServer::MessageHeader	* header = (IPipeServer::MessageHeader *)buf;
+	IPipeServer::MessageHeader* header = (IPipeServer::MessageHeader*)buf;
 
 	return
 		(bytesRead >= sizeof(IPipeServer::MessageHeader)) &&	// has a valid header
 		(bytesRead >= (sizeof(IPipeServer::MessageHeader) + header->length));
 }
 
-bool IPipeClient::WriteMessage(IPipeServer::MessageHeader * msg)
+bool IPipeClient::WriteMessage(IPipeServer::MessageHeader* msg)
 {
 	UInt32	bytesWritten;
 	UInt32	length = sizeof(IPipeServer::MessageHeader) + msg->length;

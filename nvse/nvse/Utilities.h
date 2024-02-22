@@ -109,7 +109,7 @@ class Tokenizer
 {
 public:
 	Tokenizer(const char* src, const char* delims);
-	~Tokenizer();
+	~Tokenizer() = default;
 
 	// these return the offset of token in src, or -1 if no token
 	UInt32 NextToken(std::string& outStr);
@@ -120,6 +120,36 @@ private:
 	std::string m_delims;
 	size_t		m_offset;
 	std::string m_data;
+};
+
+
+// For parsing lexical tokens inside script text line-by-line, while skipping over those inside comments.
+// Strings are passed as a single token (including the '"' characters).
+// Everything else will have to be manually handled.
+class ScriptTokenizer
+{
+public:
+	ScriptTokenizer(std::string_view scriptText);
+	~ScriptTokenizer() = default;
+
+	// Returns true if a new line could be read, false at the end of the script.
+	// Skips over commented-out lines and empty lines.
+	[[nodiscard]] bool TryLoadNextLine();
+
+	// Gets the next space-separated token from the loaded line, ignoring tokens placed inside comments.
+	// Returns an empty string_view if no line is loaded / end-of-line is reached.
+	std::string_view GetNextLineToken();
+
+	// Gets the entire line, for manual tokenizing.
+	// Returns an empty string_view if no line is loaded.
+	std::string_view GetLineText();
+
+private:
+	std::string_view m_scriptText;
+	size_t			 m_scriptOffset = 0;
+	std::vector<std::string_view> m_loadedLineTokens;
+	size_t			 m_tokenOffset = 0;
+	bool			 m_inMultilineComment = false;
 };
 
 #if RUNTIME
@@ -310,3 +340,12 @@ UInt8* GetParentBasePtr(void* addressOfReturnAddress, bool lambda = false);
 //Example in https://en.cppreference.com/w/cpp/utility/variant/visit
 //Allows function overloading with c++ lambdas.
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
+#if RUNTIME
+inline int __cdecl game_toupper(int _C) { return CdeclCall<int>(0xECA7F4, _C); }
+inline int __cdecl game_tolower(int _C) { return CdeclCall<int>(0xEC67AA, _C); }
+#else 
+// GECK and other non-runtime code (ex: steam_loader) probably don't need localized stuff...?
+inline int __cdecl game_toupper(int _C) { return toupper(_C); }
+inline int __cdecl game_tolower(int _C) { return tolower(_C); }
+#endif

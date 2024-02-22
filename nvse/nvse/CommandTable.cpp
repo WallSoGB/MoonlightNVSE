@@ -1561,7 +1561,7 @@ void CommandTable::AddCommandsV4()
 	ADD_CMD(ToUpper);
 	ADD_CMD(ToLower);
 	ADD_CMD_RET(AsciiToChar, kRetnType_String);
-	ADD_CMD_RET(NumToHex, kRetnType_String);
+	ADD_CMD_RET(NumToHex_OLD, kRetnType_String);
 	ADD_CMD(ToNumber);
 
 	ADD_CMD_RET(GetNthModName, kRetnType_String);
@@ -1589,13 +1589,13 @@ void CommandTable::AddCommandsV4()
 	ADD_CMD(SetNthFactionRankNameEX);
 
 	ADD_CMD_RET(GetStringGameSetting, kRetnType_String);
-	ADD_CMD(SetStringGameSettingEX);
+	ADD_CMD(SetStringGameSettingEX_DEPRECATED);
 
 	// 4.2 beta 02
 	ADD_CMD_RET(GetRace, kRetnType_Form);
 	ADD_CMD_RET(GetRaceName, kRetnType_String);
 	ImportConsoleCommand("SCOF");
-	ADD_CMD(PickOneOf);
+	ADD_CMD_RET(PickOneOf, kRetnType_Form);
 
 	// 4.2 beta 03 alpha 5
 	ADD_CMD(IsPlayerSwimming);
@@ -1651,7 +1651,7 @@ void CommandTable::AddCommandsV4()
 	ADD_CMD(SetRefVariable);
 	ImportConsoleCommand("ShowVars"); // requires ConsoleEcho to be turned on!
 	ADD_CMD_RET(GetStringIniSetting, kRetnType_String);
-	ADD_CMD(SetStringIniSetting);
+	ADD_CMD(SetStringIniSetting_DEPRECATED);
 
 	// 4.5 beta 07
 
@@ -1844,12 +1844,50 @@ void CommandTable::AddCommandsV6()
 	ADD_CMD(DispatchEventAlt);
 	ADD_CMD(DumpEventHandlers);
 	ADD_CMD_RET(GetEventHandlers, kRetnType_Array);
-	ADD_CMD_RET(GetSelfAlt, kRetnType_Form);
+	ADD_CMD_RET(GetSelfAlt_OLD, kRetnType_Form); // broken in certain contexts due to using expression parser with 0 args
 	ADD_CMD(SetEventHandlerAlt);
 	ADD_CMD_RET(CreateFormList, kRetnType_Form);
 	ADD_CMD(CallWhilePerSeconds);
 	ADD_CMD(CallAfterFrames);
 	ADD_CMD_RET(GetSoldItemInvRef, kRetnType_Form);
+
+	// 6.2 beta 09
+	ADD_CMD(IsEventHandlerFirst);
+	ADD_CMD(IsEventHandlerLast);
+	ADD_CMD_RET(GetHigherPriorityEventHandlers, kRetnType_Array);
+	ADD_CMD_RET(GetLowerPriorityEventHandlers, kRetnType_Array);
+	ADD_CMD(ValidateRegex);
+	ADD_CMD_RET(IntToBin, kRetnType_String);
+	ADD_CMD_RET(NumToHex, kRetnType_String);
+
+	// 6.3 beta 00
+	ADD_CMD(HasAmmoEquipped);
+	ADD_CMD(GetEquippedWeaponCanUseAmmo);
+	ADD_CMD(IsEquippedAmmoInList);
+	ADD_CMD(GetEquippedWeaponUsesAmmoList);
+	ADD_CMD(IsInventoryRef);
+	ADD_CMD(DebugPrintVar);
+
+	// 6.3 beta 01
+	ADD_CMD(SetStringIniSetting); // fixed version
+	ADD_CMD(GetHeadingAngleX);
+	ADD_CMD(GetWeaponCanUseAmmo);
+	ADD_CMD(SetAmmoConsumedPercent);
+
+	// 6.3 beta 02
+	ADD_CMD(DisablePlayerControlsAlt);
+	ADD_CMD(EnablePlayerControlsAlt);
+	ADD_CMD(GetPlayerControlsDisabledAlt);
+	ADD_CMD(DisablePlayerControlsAltEx);
+	ADD_CMD(EnablePlayerControlsAltEx);
+	ADD_CMD(GetPlayerControlsDisabledAltEx);
+
+	// 6.3 beta 03
+	ADD_CMD_RET(CopyIRAlt, kRetnType_Form);
+	ADD_CMD_RET(CompileScript, kRetnType_Form);
+
+	// 6.3 beta 04
+	ADD_CMD_RET(GetSelfAlt, kRetnType_Form);
 }
 
 namespace PluginAPI

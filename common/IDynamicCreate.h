@@ -42,25 +42,25 @@ public:																					\
 //! Specifies that a dynamic class should not be instantiated automatically
 #define NO_DYNAMIC_INSTANTIATE_HANDLER(name)	DYNAMIC_INSTANTIATE_HANDLER(name) { HALT("attempted to instantiate " #name); } END_DYNAMIC_INSTANTIATE_HANDLER
 
-//! Casts 
+//! Casts
 #define CAST(ptr, type)	_DynamicCast <type>(ptr);
 
 class IDynamicType;
 
 /**
  *	Pure virtual base class allowing dynamic creation of objects
- *	
+ *
  *	To allow dynamic creation of a class, publicly inherit IDynamic, add the
  *	macro DYNAMIC_DECLARE(classname) first in the class declaration, and add
  *	the macro DYNAMIC_DEFINE(classname) somewhere in the class definition file.
  */
 class IDynamic
 {
-	public:
-				IDynamic()	{ }
-		virtual ~IDynamic()	{ }
+public:
+	IDynamic() { }
+	virtual ~IDynamic() { }
 
-		virtual IDynamicType *	__DYN_GetDynamicType(void) = 0;
+	virtual IDynamicType* __DYN_GetDynamicType(void) = 0;
 };
 
 /**
@@ -68,22 +68,22 @@ class IDynamic
  */
 class IDynamicType
 {
-	public:
-				IDynamicType()	{ }
-		virtual ~IDynamicType() { }
+public:
+	IDynamicType() { }
+	virtual ~IDynamicType() { }
 
-		virtual IDynamic *	Create(void) = 0;
-		virtual char *		GetName(void) = 0;
+	virtual IDynamic* Create(void) = 0;
+	virtual char* GetName(void) = 0;
 
-		virtual IDynamic *	Instantiate(IDataStream * stream) = 0;
+	virtual IDynamic* Instantiate(IDataStream* stream) = 0;
 };
 
-//! 
+//!
 template <typename T>
-T * _DynamicCast(IDynamic * ptr)
+T* _DynamicCast(IDynamic* ptr)
 {
-	if(ptr && (&T::__DYN_DynamicType == ptr->__DYN_GetDynamicType()))
-		return static_cast<T *>(ptr);
+	if (ptr && (&T::__DYN_DynamicType == ptr->__DYN_GetDynamicType()))
+		return static_cast<T*>(ptr);
 
 	return NULL;
 }
@@ -93,26 +93,26 @@ T * _DynamicCast(IDynamic * ptr)
  */
 class IClassRegistry
 {
-	public:
-				IClassRegistry();
-				~IClassRegistry();
+public:
+	IClassRegistry();
+	~IClassRegistry();
 
-		static void	RegisterClassInfo(UInt32 id, IDynamicType * typeInfo);
+	static void	RegisterClassInfo(UInt32 id, IDynamicType* typeInfo);
 
-		static IDynamicType *	LookupClassInfo(UInt32 id);
-		static IDynamicType *	LookupClassInfo(char * name);
+	static IDynamicType* LookupClassInfo(UInt32 id);
+	static IDynamicType* LookupClassInfo(char* name);
 
-		static IDynamic *		Create(UInt32 id)	{ IDynamicType * info = LookupClassInfo(id); return info ? info->Create() : NULL; }
-		static IDynamic *		Create(char * name)	{ IDynamicType * info = LookupClassInfo(name); return info ? info->Create() : NULL; }
+	static IDynamic* Create(UInt32 id) { IDynamicType* info = LookupClassInfo(id); return info ? info->Create() : NULL; }
+	static IDynamic* Create(char* name) { IDynamicType* info = LookupClassInfo(name); return info ? info->Create() : NULL; }
 
-		static IDynamic *		Instantiate(UInt32 id, IDataStream * stream)	{ IDynamicType * info = LookupClassInfo(id); return info ? info->Instantiate(stream) : NULL; }
-		static IDynamic *		Instantiate(char * name, IDataStream * stream)	{ IDynamicType * info = LookupClassInfo(name); return info ? info->Instantiate(stream) : NULL; }
+	static IDynamic* Instantiate(UInt32 id, IDataStream* stream) { IDynamicType* info = LookupClassInfo(id); return info ? info->Instantiate(stream) : NULL; }
+	static IDynamic* Instantiate(char* name, IDataStream* stream) { IDynamicType* info = LookupClassInfo(name); return info ? info->Instantiate(stream) : NULL; }
 
-		static char *			GetName(UInt32 id)	{ IDynamicType * info = LookupClassInfo(id); return info ? info->GetName() : NULL; }
+	static char* GetName(UInt32 id) { IDynamicType* info = LookupClassInfo(id); return info ? info->GetName() : NULL; }
 
-	private:
-		typedef std::map <UInt32, IDynamicType *>	ClassRegistryType;
-		static ClassRegistryType	theClassRegistry;
+private:
+	typedef std::map <UInt32, IDynamicType*>	ClassRegistryType;
+	static ClassRegistryType	theClassRegistry;
 };
 
 #endif

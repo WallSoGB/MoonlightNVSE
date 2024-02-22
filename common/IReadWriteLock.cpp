@@ -16,14 +16,14 @@ void IReadWriteLock::StartRead(void)
 {
 	enterBlocker.Enter();
 	readBlocker.Wait();
-	if(readCount.Increment() == 1)
+	if (readCount.Increment() == 1)
 		writeBlocker.Block();
 	enterBlocker.Leave();
 }
 
 void IReadWriteLock::EndRead(void)
 {
-	if(!readCount.Decrement())
+	if (!readCount.Decrement())
 		writeBlocker.UnBlock();
 }
 

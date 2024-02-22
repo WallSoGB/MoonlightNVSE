@@ -3,14 +3,12 @@
 /**** IDataStream *************************************************************/
 
 IDataStream::IDataStream()
-:streamLength(0), streamOffset(0), swapBytes(false)
+	:streamLength(0), streamOffset(0), swapBytes(false)
 {
-
 }
 
 IDataStream::~IDataStream()
 {
-
 }
 
 /**
@@ -34,7 +32,7 @@ UInt16 IDataStream::Read16(void)
 
 	ReadBuf(&out, sizeof(UInt16));
 
-	if(swapBytes)
+	if (swapBytes)
 		out = Swap16(out);
 
 	return out;
@@ -49,7 +47,7 @@ UInt32 IDataStream::Read32(void)
 
 	ReadBuf(&out, sizeof(UInt32));
 
-	if(swapBytes)
+	if (swapBytes)
 		out = Swap32(out);
 
 	return out;
@@ -64,7 +62,7 @@ UInt64 IDataStream::Read64(void)
 
 	ReadBuf(&out, sizeof(UInt64));
 
-	if(swapBytes)
+	if (swapBytes)
 		out = Swap64(out);
 
 	return out;
@@ -77,30 +75,30 @@ float IDataStream::ReadFloat(void)
 {
 	UInt32	out = Read32();
 
-	return *((float *)&out);
+	return *((float*)&out);
 }
 
 /**
  *	Reads a null-or-return-terminated string from the stream
- *	
+ *
  *	If the buffer is too small to hold the entire string, it is truncated and
  *	properly terminated.
- *	
+ *
  *	@param buf the output buffer
  *	@param bufLength the size of the output buffer
  *	@return the number of characters written to the buffer
  */
-UInt32 IDataStream::ReadString(char * buf, UInt32 bufLength, char altTerminator, char altTerminator2)
+UInt32 IDataStream::ReadString(char* buf, UInt32 bufLength, char altTerminator, char altTerminator2)
 {
-	char	* traverse = buf;
+	char* traverse = buf;
 	bool	breakOnReturns = false;
 
-	if((altTerminator == '\n') || (altTerminator2 == '\n'))
+	if ((altTerminator == '\n') || (altTerminator2 == '\n'))
 		breakOnReturns = true;
 
 	ASSERT_STR(bufLength > 0, "IDataStream::ReadString: zero-sized buffer");
 
-	if(bufLength == 1)
+	if (bufLength == 1)
 	{
 		buf[0] = 0;
 		return 0;
@@ -108,22 +106,22 @@ UInt32 IDataStream::ReadString(char * buf, UInt32 bufLength, char altTerminator,
 
 	bufLength--;
 
-	for(UInt32 i = 0; i < bufLength; i++)
+	for (UInt32 i = 0; i < bufLength; i++)
 	{
 		UInt8	data = Read8();
 
-		if(breakOnReturns)
+		if (breakOnReturns)
 		{
-			if(data == 0x0D)
+			if (data == 0x0D)
 			{
-				if(Peek8() == 0x0A)
+				if (Peek8() == 0x0A)
 					Skip(1);
 
 				break;
 			}
 		}
 
-		if(!data || (data == altTerminator) || (data == altTerminator2))
+		if (!data || (data == altTerminator) || (data == altTerminator2))
 		{
 			break;
 		}
@@ -189,7 +187,7 @@ float IDataStream::PeekFloat(void)
 /**
  *	Reads raw data into a buffer without advancing the stream's position
  */
-void IDataStream::PeekBuf(void * buf, UInt32 inLength)
+void IDataStream::PeekBuf(void* buf, UInt32 inLength)
 {
 	IDataStream_PositionSaver	saver(this);
 
@@ -217,7 +215,7 @@ void IDataStream::Write8(UInt8 inData)
  */
 void IDataStream::Write16(UInt16 inData)
 {
-	if(swapBytes)
+	if (swapBytes)
 		inData = Swap16(inData);
 
 	WriteBuf(&inData, sizeof(UInt16));
@@ -228,7 +226,7 @@ void IDataStream::Write16(UInt16 inData)
  */
 void IDataStream::Write32(UInt32 inData)
 {
-	if(swapBytes)
+	if (swapBytes)
 		inData = Swap32(inData);
 
 	WriteBuf(&inData, sizeof(UInt32));
@@ -239,7 +237,7 @@ void IDataStream::Write32(UInt32 inData)
  */
 void IDataStream::Write64(UInt64 inData)
 {
-	if(swapBytes)
+	if (swapBytes)
 		inData = Swap64(inData);
 
 	WriteBuf(&inData, sizeof(UInt64));
@@ -250,9 +248,9 @@ void IDataStream::Write64(UInt64 inData)
  */
 void IDataStream::WriteFloat(float inData)
 {
-	if(swapBytes)
+	if (swapBytes)
 	{
-		UInt32	temp = *((UInt32 *)&inData);
+		UInt32	temp = *((UInt32*)&inData);
 
 		temp = Swap32(temp);
 
@@ -267,7 +265,7 @@ void IDataStream::WriteFloat(float inData)
 /**
  *	Writes a null-terminated string to the stream.
  */
-void IDataStream::WriteString(const char * buf)
+void IDataStream::WriteString(const char* buf)
 {
 	WriteBuf(buf, std::strlen(buf) + 1);
 }
@@ -320,23 +318,23 @@ void IDataStream::SwapBytes(bool inSwapBytes)
 	swapBytes = inSwapBytes;
 }
 
-IDataStream * IDataStream::GetRootParent(void)
+IDataStream* IDataStream::GetRootParent(void)
 {
-	IDataStream	* parent = GetParent();
+	IDataStream* parent = GetParent();
 
-	if(parent)
+	if (parent)
 		return parent->GetRootParent();
 	else
 		return this;
 }
 
-void IDataStream::CopyStreams(IDataStream * out, IDataStream * in, UInt64 bufferSize, UInt8 * buf)
+void IDataStream::CopyStreams(IDataStream* out, IDataStream* in, UInt64 bufferSize, UInt8* buf)
 {
 	in->Rewind();
 
 	bool	ourBuffer = false;
 
-	if(!buf)
+	if (!buf)
 	{
 		buf = new UInt8[bufferSize];
 		ourBuffer = true;
@@ -344,11 +342,11 @@ void IDataStream::CopyStreams(IDataStream * out, IDataStream * in, UInt64 buffer
 
 	UInt64	remain = in->GetLength();
 
-	while(remain > 0)
+	while (remain > 0)
 	{
 		UInt64	transferSize = remain;
 
-		if(transferSize > bufferSize)
+		if (transferSize > bufferSize)
 			transferSize = bufferSize;
 
 		in->ReadBuf(buf, transferSize);
@@ -357,25 +355,25 @@ void IDataStream::CopyStreams(IDataStream * out, IDataStream * in, UInt64 buffer
 		remain -= transferSize;
 	}
 
-	if(ourBuffer)
-		delete [] buf;
+	if (ourBuffer)
+		delete[] buf;
 }
 
-void IDataStream::CopySubStreams(IDataStream * out, IDataStream * in, UInt64 remain, UInt64 bufferSize, UInt8 * buf)
+void IDataStream::CopySubStreams(IDataStream* out, IDataStream* in, UInt64 remain, UInt64 bufferSize, UInt8* buf)
 {
 	bool	ourBuffer = false;
 
-	if(!buf)
+	if (!buf)
 	{
 		buf = new UInt8[bufferSize];
 		ourBuffer = true;
 	}
 
-	while(remain > 0)
+	while (remain > 0)
 	{
 		UInt64	transferSize = remain;
 
-		if(transferSize > bufferSize)
+		if (transferSize > bufferSize)
 			transferSize = bufferSize;
 
 		in->ReadBuf(buf, transferSize);
@@ -384,8 +382,8 @@ void IDataStream::CopySubStreams(IDataStream * out, IDataStream * in, UInt64 rem
 		remain -= transferSize;
 	}
 
-	if(ourBuffer)
-		delete [] buf;
+	if (ourBuffer)
+		delete[] buf;
 }
 
 /**** IDataStream_PositionSaver ***********************************************/
@@ -393,7 +391,7 @@ void IDataStream::CopySubStreams(IDataStream * out, IDataStream * in, UInt64 rem
 /**
  *	The constructor; save the stream's position
  */
-IDataStream_PositionSaver::IDataStream_PositionSaver(IDataStream * tgt)
+IDataStream_PositionSaver::IDataStream_PositionSaver(IDataStream* tgt)
 {
 	stream = tgt;
 	offset = tgt->GetOffset();
@@ -410,12 +408,12 @@ IDataStream_PositionSaver::~IDataStream_PositionSaver()
 /**** IDataSubStream **********************************************************/
 
 IDataSubStream::IDataSubStream()
-:stream(NULL), subBase(0)
+	:stream(NULL), subBase(0)
 {
 	//
 }
 
-IDataSubStream::IDataSubStream(IDataStream * inStream, SInt64 inOffset, SInt64 inLength)
+IDataSubStream::IDataSubStream(IDataStream* inStream, SInt64 inOffset, SInt64 inLength)
 {
 	stream = inStream;
 	subBase = inOffset;
@@ -426,10 +424,9 @@ IDataSubStream::IDataSubStream(IDataStream * inStream, SInt64 inOffset, SInt64 i
 
 IDataSubStream::~IDataSubStream()
 {
-
 }
 
-void IDataSubStream::Attach(IDataStream * inStream, SInt64 inOffset, SInt64 inLength)
+void IDataSubStream::Attach(IDataStream* inStream, SInt64 inOffset, SInt64 inLength)
 {
 	stream = inStream;
 	subBase = inOffset;
@@ -438,11 +435,11 @@ void IDataSubStream::Attach(IDataStream * inStream, SInt64 inOffset, SInt64 inLe
 	stream->SetOffset(inOffset);
 }
 
-void IDataSubStream::ReadBuf(void * buf, UInt32 inLength)
+void IDataSubStream::ReadBuf(void* buf, UInt32 inLength)
 {
 	ASSERT_STR(inLength <= GetRemain(), "IDataSubStream::ReadBuf: hit eof");
 
-	if(stream->GetOffset() != subBase + streamOffset)
+	if (stream->GetOffset() != subBase + streamOffset)
 		stream->SetOffset(subBase + streamOffset);
 
 	stream->ReadBuf(buf, inLength);
@@ -450,16 +447,16 @@ void IDataSubStream::ReadBuf(void * buf, UInt32 inLength)
 	streamOffset += inLength;
 }
 
-void IDataSubStream::WriteBuf(const void * buf, UInt32 inLength)
+void IDataSubStream::WriteBuf(const void* buf, UInt32 inLength)
 {
-	if(stream->GetOffset() != subBase + streamOffset)
+	if (stream->GetOffset() != subBase + streamOffset)
 		stream->SetOffset(subBase + streamOffset);
 
 	stream->WriteBuf(buf, inLength);
 
 	streamOffset += inLength;
 
-	if(streamLength < streamOffset)
+	if (streamLength < streamOffset)
 		streamLength = streamOffset;
 }
 

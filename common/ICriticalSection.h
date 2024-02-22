@@ -4,16 +4,16 @@
 
 class ICriticalSection
 {
-	public:
-		ICriticalSection()	{ InitializeCriticalSection(&critSection); }
-		~ICriticalSection()	{ DeleteCriticalSection(&critSection); }
+public:
+	ICriticalSection() { InitializeCriticalSection(&critSection); }
+	~ICriticalSection() { DeleteCriticalSection(&critSection); }
 
-		void	Enter(void)		{ EnterCriticalSection(&critSection); }
-		void	Leave(void)		{ LeaveCriticalSection(&critSection); }
-		bool	TryEnter(void)	{ return TryEnterCriticalSection(&critSection) != 0; }
+	void	Enter(void) { EnterCriticalSection(&critSection); }
+	void	Leave(void) { LeaveCriticalSection(&critSection); }
+	bool	TryEnter(void) { return TryEnterCriticalSection(&critSection) != 0; }
 
-	private:
-		CRITICAL_SECTION	critSection;
+private:
+	CRITICAL_SECTION	critSection;
 };
 
 class ScopedLock
@@ -70,11 +70,11 @@ public:
 
 class ScopedLock
 {
-	ICriticalSection		*m_cs;
+	ICriticalSection* m_cs;
 
 public:
-	ScopedLock(ICriticalSection &cs) : m_cs(&cs) {cs.Enter();}
-	~ScopedLock() {m_cs->Leave();}
+	ScopedLock(ICriticalSection& cs) : m_cs(&cs) { cs.Enter(); }
+	~ScopedLock() { m_cs->Leave(); }
 };
 
 #endif

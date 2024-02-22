@@ -13,23 +13,22 @@ UInt32		ITimer::s_qpcWrapCount = 0;
 UInt32		ITimer::s_qpcInaccurateCount = 0;
 
 ITimer::ITimer()
-:m_qpcBase(0), m_tickBase(0)
+	:m_qpcBase(0), m_tickBase(0)
 {
 	Init();
 }
 
 ITimer::~ITimer()
 {
-
 }
 
 void ITimer::Init(void)
 {
-	if(!s_secondsPerCount)
+	if (!s_secondsPerCount)
 	{
 		// init qpc
 		UInt64	countsPerSecond;
-		BOOL res = QueryPerformanceFrequency((LARGE_INTEGER *)&countsPerSecond);
+		BOOL res = QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSecond);
 
 		ASSERT_STR(res, "ITimer: no high-resolution timer support");
 
@@ -45,22 +44,22 @@ void ITimer::Init(void)
 		_MESSAGE("min timer period = %d", s_timecaps.wPeriodMin);
 
 		s_setTime = (timeBeginPeriod(s_timecaps.wPeriodMin) == TIMERR_NOERROR);
-		if(!s_setTime)
+		if (!s_setTime)
 			_WARNING("couldn't change timer period");
 	}
 }
 
 void ITimer::DeInit(void)
 {
-	if(s_secondsPerCount)
+	if (s_secondsPerCount)
 	{
-		if(s_setTime)
+		if (s_setTime)
 		{
 			timeEndPeriod(s_timecaps.wPeriodMin);
 			s_setTime = false;
 		}
 
-		if(s_qpcWrapCount)
+		if (s_qpcWrapCount)
 			_MESSAGE("s_qpcWrapCount: %d", s_qpcWrapCount);
 
 		s_secondsPerCount = 0;
@@ -85,10 +84,10 @@ double ITimer::GetElapsedTime(void)
 	double	tickSeconds = ((double)tickDelta) * 0.001;	// ticks are in milliseconds
 	double	qpcTickDelta = qpcSeconds - tickSeconds;
 
-	if(qpcTickDelta < 0) qpcTickDelta = -qpcTickDelta;
+	if (qpcTickDelta < 0) qpcTickDelta = -qpcTickDelta;
 
 	// if they differ by more than one second, something's wrong, return
-	if(qpcTickDelta > 1)
+	if (qpcTickDelta > 1)
 	{
 		s_qpcInaccurateCount++;
 		return tickSeconds;
@@ -103,13 +102,13 @@ UInt64 ITimer::GetQPC(void)
 {
 	UInt64	now;
 
-	QueryPerformanceCounter((LARGE_INTEGER *)&now);
+	QueryPerformanceCounter((LARGE_INTEGER*)&now);
 
-	if(s_hasLastQPC)
+	if (s_hasLastQPC)
 	{
 		UInt64	delta = now - s_lastQPC;
 
-		if(delta > s_qpcWrapMargin)
+		if (delta > s_qpcWrapMargin)
 		{
 			// we've gone back in time, return a kludged value
 

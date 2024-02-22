@@ -7,36 +7,36 @@ class IMemPool
 {
 public:
 	IMemPool()
-	:m_free(NULL), m_alloc(NULL)
+		:m_free(NULL), m_alloc(NULL)
 	{
 		Reset();
 	}
 
-	virtual ~IMemPool()	{ Clear(); }
+	virtual ~IMemPool() { Clear(); }
 
 	void	Reset(void)
 	{
-		for(UInt32 i = 0; i < size - 1; i++)
+		for (UInt32 i = 0; i < size - 1; i++)
 		{
-			m_items[i].next = &m_items[i + 1];
+			m_items[i].m_pkNext = &m_items[i + 1];
 		}
 
-		m_items[size - 1].next = NULL;
+		m_items[size - 1].m_pkNext = NULL;
 		m_free = m_items;
 		m_alloc = NULL;
 	}
 
-	T *		Allocate(void)
+	T* Allocate(void)
 	{
-		if(m_free)
+		if (m_free)
 		{
-			PoolItem	* item = m_free;
-			m_free = m_free->next;
+			PoolItem* item = m_free;
+			m_free = m_free->m_pkNext;
 
-			item->next = m_alloc;
+			item->m_pkNext = m_alloc;
 			m_alloc = item;
 
-			T	* obj = item->GetObj();
+			T* obj = item->GetObj();
 
 			new (obj) T;
 			return obj;
@@ -45,48 +45,48 @@ public:
 		return NULL;
 	}
 
-	void	Free(T * obj)
+	void	Free(T* obj)
 	{
-		PoolItem	* item = reinterpret_cast <PoolItem *>(obj);
+		PoolItem* item = reinterpret_cast <PoolItem*>(obj);
 
-		if(item == m_alloc)
+		if (item == m_alloc)
 		{
-			m_alloc = item->next;
+			m_alloc = item->m_pkNext;
 		}
 		else
 		{
-			PoolItem	* traverse = m_alloc;
-			while(traverse->next != item)
-				traverse = traverse->next;
-			traverse->next = traverse->next->next;
+			PoolItem* traverse = m_alloc;
+			while (traverse->m_pkNext != item)
+				traverse = traverse->m_pkNext;
+			traverse->m_pkNext = traverse->m_pkNext->m_pkNext;
 		}
 
-		item->next = m_free;
+		item->m_pkNext = m_free;
 		m_free = item;
 
 		obj->~T();
 	}
 
-	UInt32	GetSize(void)	{ return size; }
+	UInt32	GetSize(void) { return size; }
 
-	T *		Begin(void)
+	T* Begin(void)
 	{
-		T	* result = NULL;
+		T* result = NULL;
 
-		if(m_alloc)
+		if (m_alloc)
 			result = m_alloc->GetObj();
-		
+
 		return result;
 	}
 
-	T *		Next(T * obj)
+	T* Next(T* obj)
 	{
-		PoolItem	* item = reinterpret_cast <PoolItem *>(obj);
-		PoolItem	* next = item->next;
-		T			* result = NULL;
+		PoolItem* item = reinterpret_cast <PoolItem*>(obj);
+		PoolItem* m_pkNext = item->m_pkNext;
+		T* result = NULL;
 
-		if(next)
-			result = next->GetObj();
+		if (m_pkNext)
+			result = m_pkNext->GetObj();
 
 		return result;
 	}
@@ -97,13 +97,13 @@ public:
 
 		_DMESSAGE("free:");
 		gLog.Indent();
-		for(PoolItem * traverse = m_free; traverse; traverse = traverse->next)
+		for (PoolItem* traverse = m_free; traverse; traverse = traverse->m_pkNext)
 			_DMESSAGE("%08X", traverse);
 		gLog.Outdent();
 
 		_DMESSAGE("alloc:");
 		gLog.Indent();
-		for(PoolItem * traverse = m_alloc; traverse; traverse = traverse->next)
+		for (PoolItem* traverse = m_alloc; traverse; traverse = traverse->m_pkNext)
 			_DMESSAGE("%08X", traverse);
 		gLog.Outdent();
 
@@ -122,7 +122,7 @@ public:
 
 	void	Clear(void)
 	{
-		while(m_alloc)
+		while (m_alloc)
 			Free(m_alloc->GetObj());
 	}
 
@@ -130,14 +130,14 @@ private:
 	struct PoolItem
 	{
 		UInt8		obj[sizeof(T)];
-		PoolItem	* next;
+		PoolItem* m_pkNext;
 
-		T *			GetObj(void)	{ return reinterpret_cast <T *>(obj); }
+		T* GetObj(void) { return reinterpret_cast <T*>(obj); }
 	};
 
 	PoolItem	m_items[size];
-	PoolItem	* m_free;
-	PoolItem	* m_alloc;
+	PoolItem* m_free;
+	PoolItem* m_alloc;
 };
 
 template <typename T, UInt32 size>
@@ -145,32 +145,32 @@ class IBasicMemPool
 {
 public:
 	IBasicMemPool()
-	:m_free(NULL)
+		:m_free(NULL)
 	{
 		Reset();
 	}
 
-	virtual ~IBasicMemPool()	{ }
+	virtual ~IBasicMemPool() { }
 
 	void	Reset(void)
 	{
-		for(UInt32 i = 0; i < size - 1; i++)
+		for (UInt32 i = 0; i < size - 1; i++)
 		{
-			m_items[i].next = &m_items[i + 1];
+			m_items[i].m_pkNext = &m_items[i + 1];
 		}
 
-		m_items[size - 1].next = NULL;
+		m_items[size - 1].m_pkNext = NULL;
 		m_free = m_items;
 	}
 
-	T *		Allocate(void)
+	T* Allocate(void)
 	{
-		if(m_free)
+		if (m_free)
 		{
-			PoolItem	* item = m_free;
-			m_free = m_free->next;
+			PoolItem* item = m_free;
+			m_free = m_free->m_pkNext;
 
-			T	* obj = item->GetObj();
+			T* obj = item->GetObj();
 
 			new (obj) T;
 			return obj;
@@ -179,31 +179,31 @@ public:
 		return NULL;
 	}
 
-	void	Free(T * obj)
+	void	Free(T* obj)
 	{
-		PoolItem	* item = reinterpret_cast <PoolItem *>(obj);
+		PoolItem* item = reinterpret_cast <PoolItem*>(obj);
 
-		item->next = m_free;
+		item->m_pkNext = m_free;
 		m_free = item;
 
 		obj->~T();
 	}
 
-	UInt32	GetSize(void)	{ return size; }
+	UInt32	GetSize(void) { return size; }
 
 	bool	Full(void)
 	{
 		return m_free == NULL;
 	}
 
-	UInt32	GetIdx(T * obj)
+	UInt32	GetIdx(T* obj)
 	{
-		PoolItem	* item = reinterpret_cast <PoolItem *>(obj);
+		PoolItem* item = reinterpret_cast <PoolItem*>(obj);
 
 		return item - m_items;
 	}
 
-	T *		GetByID(UInt32 id)
+	T* GetByID(UInt32 id)
 	{
 		return m_items[id].GetObj();
 	}
@@ -212,13 +212,13 @@ private:
 	union PoolItem
 	{
 		UInt8		obj[sizeof(T)];
-		PoolItem	* next;
+		PoolItem* m_pkNext;
 
-		T *			GetObj(void)	{ return reinterpret_cast <T *>(obj); }
+		T* GetObj(void) { return reinterpret_cast <T*>(obj); }
 	};
 
 	PoolItem	m_items[size];
-	PoolItem	* m_free;
+	PoolItem* m_free;
 };
 
 template <typename T, UInt32 size>
@@ -226,38 +226,38 @@ class IThreadSafeBasicMemPool
 {
 public:
 	IThreadSafeBasicMemPool()
-	:m_free(NULL)
+		:m_free(NULL)
 	{
 		Reset();
 	}
 
-	virtual ~IThreadSafeBasicMemPool()	{ }
+	virtual ~IThreadSafeBasicMemPool() { }
 
 	void	Reset(void)
 	{
 		m_mutex.Enter();
 
-		for(UInt32 i = 0; i < size - 1; i++)
+		for (UInt32 i = 0; i < size - 1; i++)
 		{
-			m_items[i].next = &m_items[i + 1];
+			m_items[i].m_pkNext = &m_items[i + 1];
 		}
 
-		m_items[size - 1].next = NULL;
+		m_items[size - 1].m_pkNext = NULL;
 		m_free = m_items;
 
 		m_mutex.Leave();
 	}
 
-	T *		Allocate(void)
+	T* Allocate(void)
 	{
-		T	* result = NULL;
+		T* result = NULL;
 
 		m_mutex.Enter();
 
-		if(m_free)
+		if (m_free)
 		{
-			PoolItem	* item = m_free;
-			m_free = m_free->next;
+			PoolItem* item = m_free;
+			m_free = m_free->m_pkNext;
 
 			m_mutex.Leave();
 
@@ -273,11 +273,11 @@ public:
 		return result;
 	}
 
-	void	Free(T * obj)
+	void	Free(T* obj)
 	{
-		PoolItem	* item = reinterpret_cast <PoolItem *>(obj);
+		PoolItem* item = reinterpret_cast <PoolItem*>(obj);
 
-		item->next = m_free;
+		item->m_pkNext = m_free;
 
 		m_mutex.Enter();
 
@@ -288,7 +288,7 @@ public:
 		obj->~T();
 	}
 
-	UInt32	GetSize(void)	{ return size; }
+	UInt32	GetSize(void) { return size; }
 
 	bool	Full(void)
 	{
@@ -299,13 +299,13 @@ private:
 	union PoolItem
 	{
 		UInt8		obj[sizeof(T)];
-		PoolItem	* next;
+		PoolItem* m_pkNext;
 
-		T *			GetObj(void)	{ return reinterpret_cast <T *>(obj); }
+		T* GetObj(void) { return reinterpret_cast <T*>(obj); }
 	};
 
 	PoolItem	m_items[size];
-	PoolItem	* m_free;
+	PoolItem* m_free;
 
 	ICriticalSection	m_mutex;
 };

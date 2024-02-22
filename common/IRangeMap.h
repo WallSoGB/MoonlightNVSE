@@ -38,17 +38,17 @@ public:
 		m_entries.clear();
 	}
 
-	t_data *	Add(t_key start, t_key length)
+	t_data* Add(t_key start, t_key length)
 	{
-		t_data	* result = NULL;
-		Entry	* entry = NULL;
+		t_data* result = NULL;
+		Entry* entry = NULL;
 
 		t_key	end = start + length - 1;
 
-		if(end >= start)	// check for overflow ### should also check for overflow on length - 1, but that's pedantic
+		if (end >= start)	// check for overflow ### should also check for overflow on length - 1, but that's pedantic
 		{
 			// special-case empty lists
-			if(m_entries.empty())
+			if (m_entries.empty())
 			{
 				entry = &m_entries[start];
 			}
@@ -59,12 +59,12 @@ public:
 				Iterator iter = m_entries.lower_bound(start);
 				// iter contains the first entry at or after start (or null)
 
-				if(iter == m_entries.begin())
+				if (iter == m_entries.begin())
 				{
 					// there can't be anything before this entry
 					// so we only need to check if it's colliding with us
 
-					if(iter->first > end)
+					if (iter->first > end)
 					{
 						// can't provide a hint because we're inserting at the top
 						entry = &m_entries[start];
@@ -74,7 +74,7 @@ public:
 				{
 					// see if this entry doesn't collide
 					// can be null (null entries don't collide)
-					if((iter == m_entries.end()) || (iter->first > end))
+					if ((iter == m_entries.end()) || (iter->first > end))
 					{
 						// we didn't get the first entry in the map
 						// and there is at least one entry in the map
@@ -86,7 +86,7 @@ public:
 						// guaranteed to be the first entry before start
 						t_key	preEnd = preIter->first + preIter->second.length - 1;
 
-						if(preEnd < start)
+						if (preEnd < start)
 						{
 							// cool, everything's fine, allocate it
 							Iterator	newEntry = m_entries.insert(preIter, EntryMapType::value_type(start, Entry()));
@@ -98,7 +98,7 @@ public:
 		}
 
 		// set up the entry
-		if(entry)
+		if (entry)
 		{
 			entry->length = length;
 
@@ -108,15 +108,15 @@ public:
 		return result;
 	}
 
-	t_data *	Lookup(t_key addr, t_key * base = NULL, t_key * length = NULL)
+	t_data* Lookup(t_key addr, t_key* base = NULL, t_key* length = NULL)
 	{
-		t_data	* result = NULL;
+		t_data* result = NULL;
 
 		Iterator iter = LookupIter(addr);
-		if(iter != m_entries.end())
+		if (iter != m_entries.end())
 		{
-			if(base) *base = iter->first;
-			if(length) *length = iter->second.length;
+			if (base) *base = iter->first;
+			if (length) *length = iter->second.length;
 
 			result = &iter->second.data;
 		}
@@ -124,15 +124,15 @@ public:
 		return result;
 	}
 
-	bool	Erase(t_key addr, t_key * base = NULL, t_key * length = NULL)
+	bool	Erase(t_key addr, t_key* base = NULL, t_key* length = NULL)
 	{
 		bool result = false;
 
 		Iterator	iter = LookupIter(addr);
-		if(iter != m_entries.end())
+		if (iter != m_entries.end())
 		{
-			if(base) *base = iter->first;
-			if(length) *length = iter->second.length;
+			if (base) *base = iter->first;
+			if (length) *length = iter->second.length;
 
 			m_entries.erase(iter);
 
@@ -142,9 +142,9 @@ public:
 		return result;
 	}
 
-	t_key	GetDataRangeLength(t_data * data)
+	t_key	GetDataRangeLength(t_data* data)
 	{
-		Entry	* entry = reinterpret_cast <Entry *>(reinterpret_cast <UInt8 *>(data) - offsetof(Entry, data));
+		Entry* entry = reinterpret_cast <Entry*>(reinterpret_cast <UInt8*>(data) - offsetof(Entry, data));
 
 		return entry->length;
 	}
@@ -153,7 +153,7 @@ public:
 	{
 		Iterator	result = m_entries.end();
 
-		if(!m_entries.empty())
+		if (!m_entries.empty())
 		{
 			// we need to find the last entry less than or equal to addr
 
@@ -161,30 +161,30 @@ public:
 			Iterator	iter = m_entries.lower_bound(addr);
 
 			// iter is either equal to addr, greater than addr, or the end
-			if(iter == m_entries.end())
+			if (iter == m_entries.end())
 			{
 				// iter is the end
 				// can only be in the entry before this
 				// which does exist because map isn't empty
 				--iter;
 
-				if(iter->second.Contains(addr, iter->first))
+				if (iter->second.Contains(addr, iter->first))
 				{
 					result = iter;
 				}
 			}
 			// at this point iter must be valid
-			else if(iter->first > addr)
+			else if (iter->first > addr)
 			{
 				// iter is greater than addr
 				// can only be in the entry before this
 				// but there may not be an entry before this
 
-				if(iter != m_entries.begin())
+				if (iter != m_entries.begin())
 				{
 					--iter;
 
-					if(iter->second.Contains(addr, iter->first))
+					if (iter->second.Contains(addr, iter->first))
 					{
 						result = iter;
 					}

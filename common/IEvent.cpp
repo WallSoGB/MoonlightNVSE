@@ -15,7 +15,7 @@ IEvent::~IEvent()
 
 bool IEvent::Block(void)
 {
-	if(blockCount.Increment() == 1)
+	if (blockCount.Increment() == 1)
 		return (ResetEvent(theEvent) != 0);
 	else
 		return true;
@@ -23,7 +23,7 @@ bool IEvent::Block(void)
 
 bool IEvent::UnBlock(void)
 {
-	if(blockCount.Decrement() == 0)
+	if (blockCount.Decrement() == 0)
 		return (SetEvent(theEvent) != 0);
 	else
 		return true;
@@ -31,36 +31,36 @@ bool IEvent::UnBlock(void)
 
 bool IEvent::Wait(UInt32 timeout)
 {
-	switch(WaitForSingleObject(theEvent, timeout))
+	switch (WaitForSingleObject(theEvent, timeout))
 	{
-		case WAIT_ABANDONED:
-			HALT("IEvent::Wait: got abandoned event");
-			return false;
+	case WAIT_ABANDONED:
+		HALT("IEvent::Wait: got abandoned event");
+		return false;
 
-		case WAIT_OBJECT_0:
-			return true;
+	case WAIT_OBJECT_0:
+		return true;
 
-		default:
-		case WAIT_TIMEOUT:
-			gLog.FormattedMessage("IEvent::Wait: timeout");
-			return false;
+	default:
+	case WAIT_TIMEOUT:
+		gLog.FormattedMessage("IEvent::Wait: timeout");
+		return false;
 	}
 }
 
 bool IAutoEvent::Wait(UInt32 timeout)
 {
-	switch(WaitForSingleObject(theEvent, timeout))
+	switch (WaitForSingleObject(theEvent, timeout))
 	{
-		case WAIT_ABANDONED:
-			HALT("IAutoEvent::Wait: got abandoned event");
-			return false;
+	case WAIT_ABANDONED:
+		HALT("IAutoEvent::Wait: got abandoned event");
+		return false;
 
-		case WAIT_OBJECT_0:
-			return true;
+	case WAIT_OBJECT_0:
+		return true;
 
-		default:
-		case WAIT_TIMEOUT:
-			gLog.FormattedMessage("IAutoEvent::Wait: timeout");
-			return false;
+	default:
+	case WAIT_TIMEOUT:
+		gLog.FormattedMessage("IAutoEvent::Wait: timeout");
+		return false;
 	}
 }

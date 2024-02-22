@@ -10,7 +10,7 @@ void Test_IMemPool(void)
 	_DMESSAGE("start");
 	pool.Dump();
 
-	UInt32	* data0, * data1, * data2;
+	UInt32* data0, * data1, * data2;
 
 	data0 = pool.Allocate();
 	_DMESSAGE("alloc0 = %08X", data0);

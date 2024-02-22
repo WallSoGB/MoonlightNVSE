@@ -14,15 +14,15 @@ IThread::~IThread()
 {
 	ForceStop();
 
-	if(theThread)
+	if (theThread)
 	{
 		CloseHandle(theThread);
 	}
 }
 
-void IThread::Start(MainProcPtr proc, void * procParam)
+void IThread::Start(MainProcPtr proc, void* procParam)
 {
-	if(!isRunning)
+	if (!isRunning)
 	{
 		isRunning = true;
 		stopRequested = false;
@@ -30,13 +30,13 @@ void IThread::Start(MainProcPtr proc, void * procParam)
 		mainProc = proc;
 		mainProcParam = procParam;
 
-		theThread = CreateThread(NULL, 0, _ThreadProc, static_cast<IThread *>(this), 0, &threadID);
+		theThread = CreateThread(NULL, 0, _ThreadProc, static_cast<IThread*>(this), 0, &threadID);
 	}
 }
 
 void IThread::Stop(void)
 {
-	if(isRunning)
+	if (isRunning)
 	{
 		stopRequested = true;
 	}
@@ -44,7 +44,7 @@ void IThread::Stop(void)
 
 void IThread::ForceStop(void)
 {
-	if(isRunning)
+	if (isRunning)
 	{
 		TerminateThread(theThread, 0);
 
@@ -52,11 +52,11 @@ void IThread::ForceStop(void)
 	}
 }
 
-UInt32 IThread::_ThreadProc(void * param)
+UInt32 IThread::_ThreadProc(void* param)
 {
-	IThread	* _this = (IThread *)param;
+	IThread* _this = (IThread*)param;
 
-	if(_this->mainProc)
+	if (_this->mainProc)
 		_this->mainProc(_this->mainProcParam);
 
 	_this->isRunning = false;

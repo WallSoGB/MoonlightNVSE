@@ -50,6 +50,15 @@ void WriteRelCall(UInt32 jumpSrc, UInt32 jumpTgt)
 	SafeWrite32(jumpSrc + 1, jumpTgt - jumpSrc - 1 - 4);
 }
 
+void ReplaceCall(UInt32 jumpSrc, UInt32 jumpTgt)
+{
+	SafeWrite32(jumpSrc + 1, jumpTgt - jumpSrc - 1 - 4);
+}
+
+void ReplaceVirtualFunc(UInt32 jumpSrc, void* jumpTgt) {
+	SafeWrite32(jumpSrc, (UInt32)jumpTgt);
+}
+
 void WriteRelJnz(UInt32 jumpSrc, UInt32 jumpTgt)
 {
 	// jnz rel32
@@ -75,4 +84,8 @@ void PatchMemoryNop(ULONG_PTR Address, SIZE_T Size)
 	VirtualProtect((LPVOID)Address, Size, d, &d);
 
 	FlushInstructionCache(GetCurrentProcess(), (LPVOID)Address, Size);
+}
+
+void PatchMemoryNopRange(ULONG_PTR StartAddress, ULONG_PTR EndAddress) {
+	PatchMemoryNop(StartAddress, EndAddress - StartAddress);
 }
