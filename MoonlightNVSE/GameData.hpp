@@ -465,11 +465,13 @@ public:
 	}
 
 	__forceinline float GetMinutes() const {
-		return (GetGameHour() - std::floor(GetGameHour())) * 60;
+		float fHour = GetGameHour();
+		return (fHour - std::floor(fHour)) * 60;
 	}
 
 	__forceinline float GetSeconds() const {
-		return (GetMinutes() - std::floor(GetMinutes())) * 60;
+		float fMinutes = GetMinutes();
+		return (fMinutes - std::floor(fMinutes)) * 60;
 	}
 };
 
@@ -657,5 +659,38 @@ class TESObjectCELL {
 public:
 	float GetNorthRotation() const {
 		return ThisStdCall<float>(0x555AD0, this);
+	}
+};
+
+class GameSetting {
+public:
+	union Info {
+		const char*		str;
+		int				i;
+		unsigned int	u;
+		float			f;
+		bool			b;
+		char			c;
+		char			h;
+	};
+
+	GameSetting() {
+		memset(this, 0, sizeof(GameSetting));
+	}
+
+	~GameSetting() {
+		ThisStdCall(0x404A00, this);
+	}
+
+	void*		__vtable;
+	Info		uValue;
+	const char* pKey;
+
+	void Initialize(const char* apName, bool value) {
+		ThisStdCall(0x40C150, this, apName, (int)value);
+	}
+
+	void Initialize(const char* apName, float value) {
+		ThisStdCall(0x40C150, this, apName, (float)value);
 	}
 };

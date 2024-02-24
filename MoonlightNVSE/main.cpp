@@ -7,8 +7,8 @@
 NVSEInterface* g_nvseInterface{};
 IDebugLog	   gLog("logs\\MoonlightNVSE.log");
 
-bool bMoonPhaseBrightness = true;
-float fMoonlightMultipliers[5] = { 0.f, 0.33f, 0.5f, 0.9f, 1.f };
+static GameSetting bMoonPhaseBrightness;
+static GameSetting fMoonlightMultipliers[5];
 
 static __forceinline float Clamp(const float afValue, const float afMin, const float afMax) {
 	return afValue < afMin ? afMin : afValue > afMax ? afMax : afValue;
@@ -17,19 +17,19 @@ static __forceinline float Clamp(const float afValue, const float afMin, const f
 static float CalculateMoonVisibility(const float afPhase) {
 	float fMoonVisibility = 1.f;
 
-	if (!bMoonPhaseBrightness)
+	if (!bMoonPhaseBrightness.uValue.b)
 		return fMoonVisibility;
 
 	if (afPhase > 4.25f && afPhase < 5.25f)
-		fMoonVisibility = fMoonlightMultipliers[0];
+		fMoonVisibility = fMoonlightMultipliers[0].uValue.f;
 	else if (afPhase > 3.25f && afPhase < 4.25f || afPhase > 5.25f && afPhase < 6.25f)
-		fMoonVisibility = fMoonlightMultipliers[1];
+		fMoonVisibility = fMoonlightMultipliers[1].uValue.f;
 	else if (afPhase > 2.25f && afPhase < 3.25f || afPhase > 6.25f && afPhase < 7.25f)
-		fMoonVisibility = fMoonlightMultipliers[2];
+		fMoonVisibility = fMoonlightMultipliers[2].uValue.f;
 	else if (afPhase > 1.25f && afPhase < 2.25f || afPhase > 7.25f && afPhase < 8.25f || afPhase < 0.25f)
-		fMoonVisibility = fMoonlightMultipliers[3];
+		fMoonVisibility = fMoonlightMultipliers[3].uValue.f;
 	else if (afPhase > 0.25f && afPhase < 1.25f)
-		fMoonVisibility = fMoonlightMultipliers[4];
+		fMoonVisibility = fMoonlightMultipliers[4].uValue.f;
 
 	return fMoonVisibility;
 }
@@ -125,6 +125,30 @@ static void __fastcall SetMoonlightGECK(NiPoint3& arRotation) {
 	arRotation.Unitize();
 }
 
+static void InitializeGameSettings() {
+	bMoonPhaseBrightness.Initialize("iMoonPhaseBrightness", true);
+	fMoonlightMultipliers[0].Initialize("fMoonMult0", 0.f);
+	fMoonlightMultipliers[1].Initialize("fMoonMult1", 0.33f);
+	fMoonlightMultipliers[2].Initialize("fMoonMult2", 0.5f);
+	fMoonlightMultipliers[3].Initialize("fMoonMult3", 0.9f);
+	fMoonlightMultipliers[4].Initialize("fMoonMult4", 1.f);
+
+	CSimpleIniA ini;
+	ini.SetUnicode();
+	SI_Error rc = ini.LoadFile("Data\\NVSE\\Plugins\\MoonlightNVSE.ini");
+	if (rc < 0) {
+		_MESSAGE("MoonlightNVSE.ini not found, using default values");
+	}
+	else {
+		bMoonPhaseBrightness.uValue.b = ini.GetBoolValue("Main", "bMoonPhaseBrightness", true);
+		fMoonlightMultipliers[0].uValue.f = ini.GetDoubleValue("Main", "fMoonMult0", 0.f);
+		fMoonlightMultipliers[1].uValue.f = ini.GetDoubleValue("Main", "fMoonMult1", 0.33f);
+		fMoonlightMultipliers[2].uValue.f = ini.GetDoubleValue("Main", "fMoonMult2", 0.5f);
+		fMoonlightMultipliers[3].uValue.f = ini.GetDoubleValue("Main", "fMoonMult3", 0.9f);
+		fMoonlightMultipliers[4].uValue.f = ini.GetDoubleValue("Main", "fMoonMult4", 1.f);
+	};
+}
+
 bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info) {
 	info->infoVersion = PluginInfo::kInfoVersion;
 	info->name = "MoonlightNVSE";
@@ -132,22 +156,20 @@ bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* info) {
 	return true;
 }
 
+static void MessageHandler(NVSEMessagingInterface::Message* msg) {
+	switch (msg->type) {
+	case NVSEMessagingInterface::kMessage_DeferredInit:
+		InitializeGameSettings();
+		break;
+	default:
+		break;
+	}
+}
+
+
 bool NVSEPlugin_Load(NVSEInterface* nvse) {
 	if (!nvse->isEditor) {
-		CSimpleIniA ini;
-		ini.SetUnicode();
-		SI_Error rc = ini.LoadFile("Data\\NVSE\\Plugins\\MoonlightNVSE.ini");
-		if (rc < 0) { 
-			_MESSAGE("MoonlightNVSE.ini not found, using default values");
-		}
-		else {
-			bMoonPhaseBrightness = ini.GetBoolValue("Main", "bMoonPhaseBrightness", true);
-			fMoonlightMultipliers[0] = ini.GetDoubleValue("Main", "fMoonMult0", 0.f);
-			fMoonlightMultipliers[1] = ini.GetDoubleValue("Main", "fMoonMult1", 0.33f);
-			fMoonlightMultipliers[2] = ini.GetDoubleValue("Main", "fMoonMult2", 0.5f);
-			fMoonlightMultipliers[3] = ini.GetDoubleValue("Main", "fMoonMult3", 0.9f);
-			fMoonlightMultipliers[4] = ini.GetDoubleValue("Main", "fMoonMult4", 1.f);
-		};
+		((NVSEMessagingInterface*)nvse->QueryInterface(kInterface_Messaging))->RegisterListener(nvse->GetPluginHandle(), "NVSE", MessageHandler);
 
 		// FNV
 		WriteRelCall(0x6422EE, (UInt32)SetMoonlightFNV);
