@@ -68,6 +68,19 @@ public:
 
 class NiMatrix3 {
 public:
+	NiMatrix3() {};
+	NiMatrix3(float m00, float m10, float m20, float m01, float m11, float m21, float m02, float m12, float m22) {
+		m_pEntry[0][0] = m00;
+		m_pEntry[0][1] = m10;
+		m_pEntry[0][2] = m20;
+		m_pEntry[1][0] = m01;
+		m_pEntry[1][1] = m11;
+		m_pEntry[1][2] = m21;
+		m_pEntry[2][0] = m02;
+		m_pEntry[2][1] = m12;
+		m_pEntry[2][2] = m22;
+	}
+
 	float m_pEntry[3][3];
 
 	void MakeZRotation(float afAngle) {
@@ -85,6 +98,47 @@ public:
 		m_pEntry[2][0] = 0.f;
 		m_pEntry[2][1] = 0.f;
 		m_pEntry[2][2] = 1.f;
+	}
+
+	NiMatrix3 operator* (const NiMatrix3& mat) const {
+		NiMatrix3 result;
+		result.m_pEntry[0][0] =
+			m_pEntry[0][0] * mat.m_pEntry[0][0] +
+			m_pEntry[0][1] * mat.m_pEntry[1][0] +
+			m_pEntry[0][2] * mat.m_pEntry[2][0];
+		result.m_pEntry[1][0] =
+			m_pEntry[1][0] * mat.m_pEntry[0][0] +
+			m_pEntry[1][1] * mat.m_pEntry[1][0] +
+			m_pEntry[1][2] * mat.m_pEntry[2][0];
+		result.m_pEntry[2][0] =
+			m_pEntry[2][0] * mat.m_pEntry[0][0] +
+			m_pEntry[2][1] * mat.m_pEntry[1][0] +
+			m_pEntry[2][2] * mat.m_pEntry[2][0];
+		result.m_pEntry[0][1] =
+			m_pEntry[0][0] * mat.m_pEntry[0][1] +
+			m_pEntry[0][1] * mat.m_pEntry[1][1] +
+			m_pEntry[0][2] * mat.m_pEntry[2][1];
+		result.m_pEntry[1][1] =
+			m_pEntry[1][0] * mat.m_pEntry[0][1] +
+			m_pEntry[1][1] * mat.m_pEntry[1][1] +
+			m_pEntry[1][2] * mat.m_pEntry[2][1];
+		result.m_pEntry[2][1] =
+			m_pEntry[2][0] * mat.m_pEntry[0][1] +
+			m_pEntry[2][1] * mat.m_pEntry[1][1] +
+			m_pEntry[2][2] * mat.m_pEntry[2][1];
+		result.m_pEntry[0][2] =
+			m_pEntry[0][0] * mat.m_pEntry[0][2] +
+			m_pEntry[0][1] * mat.m_pEntry[1][2] +
+			m_pEntry[0][2] * mat.m_pEntry[2][2];
+		result.m_pEntry[1][2] =
+			m_pEntry[1][0] * mat.m_pEntry[0][2] +
+			m_pEntry[1][1] * mat.m_pEntry[1][2] +
+			m_pEntry[1][2] * mat.m_pEntry[2][2];
+		result.m_pEntry[2][2] =
+			m_pEntry[2][0] * mat.m_pEntry[0][2] +
+			m_pEntry[2][1] * mat.m_pEntry[1][2] +
+			m_pEntry[2][2] * mat.m_pEntry[2][2];
+		return result;
 	}
 };
 
@@ -351,6 +405,10 @@ public:
 
 	const NiPoint3& GetWorldTranslate() const {
 		return m_kWorld.m_Translate;
+	}
+
+	const NiMatrix3& GetWorldRotate() const {
+		return m_kWorld.m_Rotate;
 	}
 
 	void SetLocalRotate(const NiMatrix3& kRot) {

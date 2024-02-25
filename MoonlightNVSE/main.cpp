@@ -9,6 +9,9 @@ IDebugLog	   gLog("logs\\MoonlightNVSE.log");
 
 static GameSetting bMoonPhaseBrightness;
 static GameSetting fMoonlightMultipliers[5];
+static const NiMatrix3 kMoonRotation = NiMatrix3(0.0f, 0.0f, 0.0f,
+												-1.0f, 1.0f, 0.0f,
+												 0.0f, 0.0f, 1.0f);
 
 static __forceinline float Clamp(const float afValue, const float afMin, const float afMax) {
 	return afValue < afMin ? afMin : afValue > afMax ? afMax : afValue;
@@ -78,9 +81,8 @@ static void __fastcall SetMoonlightFNV(NiNode* apSunLight, void*, NiMatrix3& arR
 
 		if (fGameHour >= fSunsetEnd || fGameHour < fSunriseStart) {
 			// Apply moon's rotation to the sun
-			arRotation = pSky->pMasser->spRoot->m_kLocal.m_Rotate;
-			arRotation.m_pEntry[0][0] = -(arRotation.m_pEntry[0][0] * 0.5f);
-			
+			arRotation = pSky->pMasser->spMoonNode->GetWorldRotate() * kMoonRotation;
+
 			fMoonVisibility = CalculateMoonVisibility(fPhase);
 
 			fMultiplier = CalculateNightFade(fGameHour, fSunsetEnd, fSunriseStart);
