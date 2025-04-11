@@ -1,31 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="nvse">
-      <UniqueIdentifier>{92a4f350-f2ec-4fca-bdd3-927732d91b34}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="external">
-      <UniqueIdentifier>{81445e17-a340-4edf-a759-88832409ca5c}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\nvse\nvse\SafeWrite.cpp">
-      <Filter>nvse</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\shared\Utils\DirectXUtils.cpp">
+      <Filter>shared\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\SafeWrite\SafeWrite.cpp">
+      <Filter>shared\SafeWrite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nvse\nvse\SafeWrite.h">
-      <Filter>nvse</Filter>
+    <ClInclude Include="..\shared\Defines.hpp">
+      <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="GameData.hpp" />
-    <ClInclude Include="external\simpleini\SimpleIni.h">
-      <Filter>external</Filter>
+    <ClInclude Include="GameData.hpp">
+      <Filter>internal\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Utils\DirectXUtils.hpp">
+      <Filter>shared\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\SafeWrite\SafeWrite.hpp">
+      <Filter>shared\SafeWrite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="exports.def" />
+    <Filter Include="shared">
+      <UniqueIdentifier>{2bbfd4c7-bc5c-4989-ae86-7f7f9536a38c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="internal">
+      <UniqueIdentifier>{8a94e666-6b94-4d33-a356-40eefe01f724}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="internal\Game">
+      <UniqueIdentifier>{c799fdc3-b6bc-46e9-bb4d-ad60187547f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared\Utils">
+      <UniqueIdentifier>{bf8ff9dd-cff6-48ce-b950-68e1136f1a64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared\SafeWrite">
+      <UniqueIdentifier>{c9b7345b-6b54-4701-a0e1-201a2beb0a0f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

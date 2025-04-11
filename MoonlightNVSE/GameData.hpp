@@ -1,12 +1,5 @@
 #pragma once
 
-#include "SafeWrite.h"
-#include "Utilities.h"
-
-#define ASSERT_SIZE(a, b) static_assert(sizeof(a) == b, "Wrong structure size!");
-#define ASSERT_OFFSET(a, b, c) static_assert(offsetof(a, b) == c, "Wrong member offset!");
-#define CREATE_OBJECT(CLASS, ADDRESS) static CLASS* CreateObject() { return StdCall<CLASS*>(ADDRESS); };
-
 class NiNode;
 class NiGeometry;
 class NiTriBasedGeom;
@@ -62,8 +55,6 @@ public:
 	bool byte6;
 	bool bUpdateGeomorphs;
 	bool bUpdateShadowSceneNode;
-
-	static NiUpdateData kDefaultUpdateData;
 };
 
 class NiMatrix3 {
@@ -84,61 +75,15 @@ public:
 	float m_pEntry[3][3];
 
 	void MakeZRotation(float afAngle) {
-		float fCos = std::cos(afAngle);
-		float fSin = std::sin(afAngle);
-
-		m_pEntry[0][0] = fCos;
-		m_pEntry[0][1] = fSin;
-		m_pEntry[0][2] = 0.f;
-
-		m_pEntry[1][0] = -fSin;
-		m_pEntry[1][1] = fCos;
-		m_pEntry[1][2] = 0.f;
-
-		m_pEntry[2][0] = 0.f;
-		m_pEntry[2][1] = 0.f;
-		m_pEntry[2][2] = 1.f;
+		DirectX::XMMATRIX kMatrix = DirectX::XMMatrixRotationZ(afAngle);
+		DirectX::XMStoreNiMatrix3(*this, kMatrix);
 	}
 
 	NiMatrix3 operator* (const NiMatrix3& mat) const {
-		NiMatrix3 result;
-		result.m_pEntry[0][0] =
-			m_pEntry[0][0] * mat.m_pEntry[0][0] +
-			m_pEntry[0][1] * mat.m_pEntry[1][0] +
-			m_pEntry[0][2] * mat.m_pEntry[2][0];
-		result.m_pEntry[1][0] =
-			m_pEntry[1][0] * mat.m_pEntry[0][0] +
-			m_pEntry[1][1] * mat.m_pEntry[1][0] +
-			m_pEntry[1][2] * mat.m_pEntry[2][0];
-		result.m_pEntry[2][0] =
-			m_pEntry[2][0] * mat.m_pEntry[0][0] +
-			m_pEntry[2][1] * mat.m_pEntry[1][0] +
-			m_pEntry[2][2] * mat.m_pEntry[2][0];
-		result.m_pEntry[0][1] =
-			m_pEntry[0][0] * mat.m_pEntry[0][1] +
-			m_pEntry[0][1] * mat.m_pEntry[1][1] +
-			m_pEntry[0][2] * mat.m_pEntry[2][1];
-		result.m_pEntry[1][1] =
-			m_pEntry[1][0] * mat.m_pEntry[0][1] +
-			m_pEntry[1][1] * mat.m_pEntry[1][1] +
-			m_pEntry[1][2] * mat.m_pEntry[2][1];
-		result.m_pEntry[2][1] =
-			m_pEntry[2][0] * mat.m_pEntry[0][1] +
-			m_pEntry[2][1] * mat.m_pEntry[1][1] +
-			m_pEntry[2][2] * mat.m_pEntry[2][1];
-		result.m_pEntry[0][2] =
-			m_pEntry[0][0] * mat.m_pEntry[0][2] +
-			m_pEntry[0][1] * mat.m_pEntry[1][2] +
-			m_pEntry[0][2] * mat.m_pEntry[2][2];
-		result.m_pEntry[1][2] =
-			m_pEntry[1][0] * mat.m_pEntry[0][2] +
-			m_pEntry[1][1] * mat.m_pEntry[1][2] +
-			m_pEntry[1][2] * mat.m_pEntry[2][2];
-		result.m_pEntry[2][2] =
-			m_pEntry[2][0] * mat.m_pEntry[0][2] +
-			m_pEntry[2][1] * mat.m_pEntry[1][2] +
-			m_pEntry[2][2] * mat.m_pEntry[2][2];
-		return result;
+		DirectX::XMMATRIX kMatrix = DirectX::XMMatrixMultiply(DirectX::XMLoadNiMatrix3(*this), DirectX::XMLoadNiMatrix3(mat));
+		NiMatrix3 kResult;
+		DirectX::XMStoreNiMatrix3(kResult, kMatrix);
+		return kResult;
 	}
 };
 
@@ -147,7 +92,8 @@ public:
 	float x, y, z;
 
 	__forceinline float Length() const {
-		return std::sqrt(x * x + y * y + z * z);
+		DirectX::XMVECTOR kVector = DirectX::XMVector3Length(DirectX::XMLoadNiPoint3(*this));
+		return DirectX::XMVectorGetX(kVector);
 	}
 
 	__forceinline float Unitize() {
@@ -172,6 +118,11 @@ public:
 class NiColor {
 public:
 	float r, g, b;
+};
+
+class NiColorA {
+public:
+	float r, g, b, a;
 };
 
 class NiBound {
@@ -199,10 +150,10 @@ public:
 	virtual ~NiTArray();
 
 	T_Data* m_pBase;
-	UInt16 m_usMaxSize;
-	UInt16 m_usSize;
-	UInt16 m_usESize;
-	UInt16 m_usGrowBy;
+	uint16_t m_usMaxSize;
+	uint16_t m_usSize;
+	uint16_t m_usESize;
+	uint16_t m_usGrowBy;
 };
 
 ASSERT_SIZE(NiTArray<void*>, 0x10);
@@ -222,9 +173,9 @@ class NiTListBase {
 public:
 	NiTListItem<T_Data>*	m_pkHead;
 	NiTListItem<T_Data>*	m_pkTail;
-	UInt32					m_uiCount;
+	uint32_t					m_uiCount;
 
-	inline UInt32 GetSize() const { return m_uiCount; };
+	inline uint32_t GetSize() const { return m_uiCount; };
 	bool IsEmpty() const { return m_uiCount == 0; };
 
 	NiTListIterator GetHeadPos() const { return m_pkHead; };
@@ -293,7 +244,7 @@ public:
     virtual			~NiRefObject();
     virtual void	DeleteThis();
 
-    UInt32 m_uiRefCount;
+    uint32_t m_uiRefCount;
 
     // 0x40F6E0
     inline void IncRefCount() {
@@ -349,8 +300,8 @@ public:
 	const char*	m_kName;
 	void*		m_spControllers;
 	void**		m_ppkExtra;
-	UInt16		m_usExtraDataSize;
-	UInt16		m_usMaxSize;
+	uint16_t		m_usExtraDataSize;
+	uint16_t		m_usMaxSize;
 };
 
 class NiAVObject : public NiObjectNET {
@@ -361,9 +312,9 @@ public:
 	virtual NiAVObject*		GetObject_(const NiFixedString& kName);
 	virtual NiAVObject*		GetObjectByName(const NiFixedString& kName);
 	virtual void			SetSelectiveUpdateFlags(bool* bSelectiveUpdate, bool bSelectiveUpdateTransforms, bool* bRigid);
-	virtual void			UpdateDownwardPass(const NiUpdateData& arData, UInt32 uFlags);
-	virtual void			UpdateSelectedDownwardPass(const NiUpdateData& arData, UInt32 uFlags);
-	virtual void			UpdateRigidDownwardPass(const NiUpdateData& arData, UInt32 uFlags);
+	virtual void			UpdateDownwardPass(const NiUpdateData& arData, uint32_t uFlags);
+	virtual void			UpdateSelectedDownwardPass(const NiUpdateData& arData, uint32_t uFlags);
+	virtual void			UpdateRigidDownwardPass(const NiUpdateData& arData, uint32_t uFlags);
 	virtual void			Unk_46(void* arg);
 	virtual void			UpdateTransform();
 	virtual void			UpdateWorldData(const NiUpdateData& arData);
@@ -424,38 +375,76 @@ public:
 	}
 
 	void Update(NiUpdateData& arData) {
-		ThisStdCall(0xA59C60, this, &arData);
+		ThisCall(0xA59C60, this, &arData);
+	}
+
+	NiProperty* GetProperty(uint32_t auiProperty) const {
+		return ThisCall<NiProperty*>(0xA59D30, this, auiProperty);
 	}
 };
 
 class NiNode : public NiAVObject {
 public:
 	virtual void			AttachChild(NiAVObject* apChild, bool abFirstAvail);
-	virtual void			InsertChildAt(UInt32 i, NiAVObject* apChild);
+	virtual void			InsertChildAt(uint32_t i, NiAVObject* apChild);
 	virtual void			DetachChild(NiAVObject* apChild, NiAVObject*& aspAVObject);
 	virtual void			DetachChildAlt(NiAVObject* apChild);
-	virtual void			DetachChildAt(UInt32 i, NiAVObject*& aspAVObject);
-	virtual NiAVObject*		DetachChildAtAlt(UInt32 i);
-	virtual void			SetAt(UInt32 i, NiAVObject* apChild, NiAVObject*& aspAVObject);
-	virtual void			SetAtAlt(UInt32 i, NiAVObject* apChild);
+	virtual void			DetachChildAt(uint32_t i, NiAVObject*& aspAVObject);
+	virtual NiAVObject*		DetachChildAtAlt(uint32_t i);
+	virtual void			SetAt(uint32_t i, NiAVObject* apChild, NiAVObject*& aspAVObject);
+	virtual void			SetAtAlt(uint32_t i, NiAVObject* apChild);
 	virtual void			UpdateUpwardPass();
 
 	NiTArray<NiAVObject*> m_kChildren;
 
-    UInt32 GetChildCount() const {
+    uint32_t GetChildCount() const {
 		return m_kChildren.m_usESize;
     }
 
-	UInt32 GetArrayCount() const {
+	uint32_t GetArrayCount() const {
 		return m_kChildren.m_usSize;
 	}
 
-	NiAVObject* GetAt(UInt32 index) const {
+	NiAVObject* GetAt(uint32_t index) const {
 		if (index >= GetArrayCount())
 			return nullptr;
 
 		return m_kChildren.m_pBase[index];
 	}
+};
+
+class NiDynamicEffect : public NiAVObject {
+public:
+	bool						m_bOn;
+	uint8_t						m_ucEffectType;
+	bool						bCastShadows;
+	bool						bCanCarry;
+	int32_t						m_iIndex;
+	uint32_t					m_uiPushCount;
+	uint32_t					m_uiRevID;
+	NiTListBase<NiAVObject*>	m_pkShadowGenerator;
+	NiTListBase<NiAVObject*>	m_kUnaffectedNodeList;
+};
+
+class NiLight : public NiDynamicEffect {
+public:
+	float	m_fDimmer;
+	NiColor m_kAmb;
+	NiColor m_kDiff;
+	NiColor	m_kSpec;
+	void*	m_pvRendererData;
+};
+
+class NiShadeProperty {
+public:
+	char	filler[0x1C];
+	uint32_t	m_eShaderType;
+};
+
+class SkyShaderProperty : public NiShadeProperty {
+public:
+	char		filler[0x40];
+	NiColorA	kVertexColor;
 };
 
 class PlayerCharacter {
@@ -500,13 +489,13 @@ public:
 	TESGlobal*	pGameHour;
 	TESGlobal*	pGameDaysPassed;
 	TESGlobal*	pTimeScale;
-	UInt32		uiMidnightsPassed;
+	uint32_t		uiMidnightsPassed;
 	bool		bGameLoaded;
-	UInt32		unk20;
-	UInt32		unk24;
-	UInt32		unk28;
+	uint32_t		unk20;
+	uint32_t		unk24;
+	uint32_t		unk28;
 	float		fLastUpdHour;
-	UInt32		initialized;
+	uint32_t		initialized;
 
 	static __forceinline Calendar* GetSingleton() { return (Calendar*)0x11DE7B8; };
 
@@ -563,13 +552,13 @@ public:
 	};
 
 	char			filler[0x50];
-	UInt8			ucData[6];
+	uint8_t			ucData[6];
 
-	__forceinline UInt8 GetMoonPhaseDays() const {
+	__forceinline uint8_t GetMoonPhaseDays() const {
 		return ucData[MOON_DATA] & 0x3F;
 	}
 
-	__forceinline UInt8 GetTransTime(UInt32 auiTime) const {
+	__forceinline uint8_t GetTransTime(uint32_t auiTime) const {
 		return auiTime > 3 ? 0 : ucData[auiTime];
 	}
 };
@@ -600,12 +589,12 @@ public:
 	};
 
 	struct SkySound {
-		UInt32		unk00;
-		UInt32		unk04;
-		UInt32		unk08;
-		TESWeather* pWeather;
-		UInt32		uiType;
-		UInt32		uiSoundID;
+		uint32_t		unk00;
+		uint32_t		unk04;
+		uint32_t		unk08;
+		TESWeather*		pWeather;
+		uint32_t		uiType;
+		uint32_t		uiSoundID;
 	};
 
 	enum SkyMode {
@@ -636,9 +625,9 @@ public:
 	float							fWindAngle;
 	float							fFogNearPlane;
 	float							fFogFarPlane;
-	UInt32							unk0DC;
-	UInt32							unk0E0;
-	UInt32							unk0E4;
+	uint32_t						unk0DC;
+	uint32_t						unk0E0;
+	uint32_t						unk0E4;
 	float							fFogPower;
 	float							fCurrentGameHour;
 	float							fLastWeatherUpdate;
@@ -646,12 +635,12 @@ public:
 	SkyMode							eMode;
 	BSSimpleList<SkySound>*			pSkySoundList;
 	float							fFlash;
-	UInt32							uiFlashTime;
-	UInt32							uiLastMoonPhaseUpdate;
+	uint32_t						uiFlashTime;
+	uint32_t						uiLastMoonPhaseUpdate;
 	float							fWindowReflectionTimer;
 	float							fAccelBeginPct;
-	UInt32							unk114;
-	UInt32							uiFlags;
+	uint32_t						unk114;
+	uint32_t						uiFlags;
 	ImageSpaceModifierInstanceForm* pFadeInIMODCurrent;
 	ImageSpaceModifierInstanceForm* pFadeOutIMODCurrent;
 	ImageSpaceModifierInstanceForm* pFadeInIMODLast;
@@ -665,19 +654,19 @@ public:
 	__forceinline NiColor& GetAmbientColor()	{ return kColors[SC_AMBIENT]; }
 
 	__forceinline float GetSunriseBegin() {
-		return ThisStdCall<float>(0x595EA0, this);
+		return ThisCall<float>(0x595EA0, this);
 	}
 
 	__forceinline float GetSunriseEnd() {
-		return ThisStdCall<float>(0x595F50, this);
+		return ThisCall<float>(0x595F50, this);
 	}
 
 	__forceinline float GetSunsetBegin() {
-		return ThisStdCall<float>(0x595FC0, this);
+		return ThisCall<float>(0x595FC0, this);
 	}
 
 	__forceinline float GetSunsetEnd() {
-		return ThisStdCall<float>(0x596030, this);
+		return ThisCall<float>(0x596030, this);
 	}
 
 	float CalculateMoonPhase() const {
@@ -696,19 +685,19 @@ namespace GECK {
 		static __forceinline Sky* GetSingleton() { return *(Sky**)0xEDF1DC; };
 
 		__forceinline float GetSunriseBegin() {
-			return ThisStdCall<float>(0x6803A0, this);
+			return ThisCall<float>(0x6803A0, this);
 		}
 
 		__forceinline float GetSunriseEnd() {
-			return ThisStdCall<float>(0x6803E0, this);
+			return ThisCall<float>(0x6803E0, this);
 		}
 
 		__forceinline float GetSunsetBegin() {
-			return ThisStdCall<float>(0x595FC0, this);
+			return ThisCall<float>(0x595FC0, this);
 		}
 
 		__forceinline float GetSunsetEnd() {
-			return ThisStdCall<float>(0x680420, this);
+			return ThisCall<float>(0x680420, this);
 		}
 	};
 }
@@ -716,7 +705,7 @@ namespace GECK {
 class TESObjectCELL {
 public:
 	float GetNorthRotation() const {
-		return ThisStdCall<float>(0x555AD0, this);
+		return ThisCall<float>(0x555AD0, this);
 	}
 };
 
@@ -737,7 +726,7 @@ public:
 	}
 
 	~GameSetting() {
-		ThisStdCall(0x404A00, this);
+		ThisCall(0x404A00, this);
 	}
 
 	void*		__vtable;
@@ -745,10 +734,10 @@ public:
 	const char* pKey;
 
 	void Initialize(const char* apName, bool value) {
-		ThisStdCall(0x40C150, this, apName, (int)value);
+		ThisCall(0x40C150, this, apName, (int)value);
 	}
 
 	void Initialize(const char* apName, float value) {
-		ThisStdCall(0x40C150, this, apName, (float)value);
+		ThisCall(0x40C150, this, apName, (float)value);
 	}
 };
