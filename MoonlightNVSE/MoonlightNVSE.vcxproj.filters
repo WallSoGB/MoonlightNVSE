@@ -8,6 +8,9 @@
     <ClCompile Include="..\shared\SafeWrite\SafeWrite.cpp">
       <Filter>shared\SafeWrite</Filter>
     </ClCompile>
+    <ClCompile Include="..\shared\NVSEManager\NVSEGlobalManager.cpp">
+      <Filter>shared\NVSEGlobalManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\Defines.hpp">
@@ -21,6 +24,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\SafeWrite\SafeWrite.hpp">
       <Filter>shared\SafeWrite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\NVSEManager\NVSEGlobalManager.hpp">
+      <Filter>shared\NVSEGlobalManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +44,9 @@
     </Filter>
     <Filter Include="shared\SafeWrite">
       <UniqueIdentifier>{c9b7345b-6b54-4701-a0e1-201a2beb0a0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared\NVSEGlobalManager">
+      <UniqueIdentifier>{0785e6a2-36e3-491a-ab59-2049dcb32c96}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

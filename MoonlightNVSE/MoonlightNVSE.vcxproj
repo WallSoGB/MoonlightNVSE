@@ -125,12 +125,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\NVSEManager\NVSEGlobalManager.cpp" />
     <ClCompile Include="..\shared\SafeWrite\SafeWrite.cpp" />
     <ClCompile Include="..\shared\Utils\DirectXUtils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\Defines.hpp" />
+    <ClInclude Include="..\shared\NVSEManager\NVSEGlobalManager.hpp" />
     <ClInclude Include="..\shared\SafeWrite\SafeWrite.hpp" />
     <ClInclude Include="..\shared\Utils\DirectXUtils.hpp" />
     <ClInclude Include="GameData.hpp" />

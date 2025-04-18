@@ -1,8 +1,7 @@
 #include "external/simpleini/SimpleIni.h"
 #include "GameData.hpp"
 #include "nvse/PluginAPI.h"
-
-NVSEInterface* g_nvseInterface{};
+#include <shared/NVSEManager/NVSEGlobalManager.hpp>
 
 struct alignas(16) TimeOfDayData {
 	TimeOfDayData() : fStart(0.f), fMid(0.f), fEnd(0.f), fTransTime(0.f) {}
@@ -42,6 +41,11 @@ static NiMatrix3 kMoonRotation = NiMatrix3( 0.f, 0.f, 0.f,
 
 TimeOfDayData kSunrise;
 TimeOfDayData kSunset;
+
+enum MoonlightEvents : uint32_t {
+	ML_COLOR_START = 0,
+	ML_COLOR_END,
+};
 
 
 static __forceinline float Clamp(const float afValue, const float afMin, const float afMax) {
@@ -119,7 +123,7 @@ public:
 		}
 
 		SetLocalRotate(arRotation);
-
+		
 		// Fixes sky rotation in interiors marked as exterior. 
 		// It doesn't respect the north angle offset in vanilla, making sunrise happen at south etc.
 		if (pTES->pInteriorCell && pSky->eMode > Sky::SM_INTERIOR) [[unlikely]] {
@@ -130,6 +134,7 @@ public:
 	}
 
 	void SetMoonlightColor(const NiColor& arColor) {
+		NVSEGlobalManager::GetSingleton().DispatchPluginEvent(ML_COLOR_START, &const_cast<NiColor&>(arColor), sizeof(uintptr_t));
 		const TES* pTES = TES::GetSingleton();
 		Sky* pSky = Sky::GetSingleton();
 
@@ -183,6 +188,7 @@ public:
 		}
 
 		m_kDiff = kColor;
+		NVSEGlobalManager::GetSingleton().DispatchPluginEvent(ML_COLOR_END, &m_kDiff, sizeof(uintptr_t));
 	}
 };
 #pragma optimize( "", on )
@@ -250,7 +256,9 @@ EXTERN_DLL_EXPORT bool NVSEPlugin_Query(const NVSEInterface* nvse, PluginInfo* i
 
 EXTERN_DLL_EXPORT bool NVSEPlugin_Load(NVSEInterface* nvse) {
 	if (!nvse->isEditor) {
-		((NVSEMessagingInterface*)nvse->QueryInterface(kInterface_Messaging))->RegisterListener(nvse->GetPluginHandle(), "NVSE", MessageHandler);
+		NVSEGlobalManager& rNVSE = NVSEGlobalManager::GetSingleton();
+		rNVSE.Initialize(nvse);
+		rNVSE.RegisterPluginEventListener("NVSE", MessageHandler);
 
 		// FNV
 		ReplaceCallEx(0x6422EE, &FNVHooks::SetMoonlightRot);
