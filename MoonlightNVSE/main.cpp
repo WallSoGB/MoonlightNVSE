@@ -193,20 +193,20 @@ public:
 };
 #pragma optimize( "", on )
 
-class GECKHooks {
+class GECKHooks : public NiPoint3 {
 public:
-	void SetMoonlightRot(NiPoint3& arRotation) {
+	void SetMoonlightRot() {
 		GECK::Sky* pSky = GECK::Sky::GetSingleton();
 		float gameHour = pSky->fCurrentGameHour;
 		// Not bothering with color fade
-		arRotation.y = -arRotation.y;
+		y = -y;
 		if (pSky->pMasser && gameHour >= pSky->GetSunsetEnd() || gameHour < pSky->GetSunriseBegin()) {
 			NiMatrix3& rotMatrix = pSky->pMasser->spRoot->m_kLocal.m_Rotate;
-			arRotation.x = -(rotMatrix.m_pEntry[0][0] * 0.5f);
-			arRotation.y = rotMatrix.m_pEntry[1][0];
-			arRotation.z = rotMatrix.m_pEntry[2][0];
+			x = -(rotMatrix.m_pEntry[0][0] * 0.5f);
+			y = rotMatrix.m_pEntry[1][0];
+			z = rotMatrix.m_pEntry[2][0];
 		}
-		arRotation.Unitize();
+		Unitize();
 	}
 };
 
